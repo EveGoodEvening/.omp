@@ -1,0 +1,12 @@
+providers:
+  cpa:
+    baseUrl: <CPA_BASE_URL>
+    apiKey: CPA_API_KEY
+    api: openai-responses
+    auth: apiKey
+    models:
+      - id: gpt-5.5
+        name: gpt-5.5
+        reasoning: true
+        input: [text, image]
+        contextWindow: 200000

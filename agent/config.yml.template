@@ -1,0 +1,8 @@
+defaultThinkingLevel: medium
+
+modelRoles:
+  default: cpa/gpt-5.5
+  plan: cpa/gpt-5.5:xhigh
+
+enabledModels:
+ - cpa/gpt-5.5

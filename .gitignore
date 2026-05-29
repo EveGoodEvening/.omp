@@ -1,0 +1,11 @@
+# Ignore everything by default
+*
+
+# Keep directories traversable so template files can be discovered
+!*/
+
+# Keep this file trackable
+!.gitignore
+
+# Track template files
+!*.template
