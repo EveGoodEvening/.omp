@@ -1,3 +1,6 @@
+tools:
+  approvalMode: yolo # always-ask, write, yolo
+
 defaultThinkingLevel: medium
 
 modelRoles:
