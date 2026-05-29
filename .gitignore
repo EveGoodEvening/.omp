@@ -9,3 +9,4 @@
 
 # Track template files
 !*.template
+!agent/*.md
