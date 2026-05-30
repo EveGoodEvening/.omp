@@ -1,3 +1,7 @@
+theme: 
+  dark: dark-copper
+  light: light
+
 tools:
   approvalMode: yolo # always-ask, write, yolo
 
