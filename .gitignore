@@ -1,12 +1,15 @@
-# Ignore everything by default
 *
 
-# Keep directories traversable so template files can be discovered
 !*/
+plugins/cache/
 
-# Keep this file trackable
 !.gitignore
 
-# Track template files
 !*.template
+
 !agent/*.md
+!agent/agents/*.md
+!agent/commands/*.md
+!agent/skills/
+!agent/skills/**
+
