@@ -1,15 +1,35 @@
+# Deny-by-default: ignore every file unless explicitly allowlisted below.
 *
 
+# Keep directory traversal open so allowlist negations can reach nested files.
 !*/
+
+# Root environment files are runtime-only. Keep committed examples/templates explicit.
+.env
+.env.*
+
+# Agent runtime/local state. Templates and markdown are allowlisted below.
+agent/config.yml
+agent/models.yml
+agent/*.local.*
+agent/*.db
+agent/*.db-*
+agent/sessions/
+agent/terminal-sessions/
+
+# Runtime outputs and downloaded/cached assets.
+logs/
+marketplaces.json
 plugins/cache/
+natives/
 
+# Repository metadata and committed source/config surface.
 !.gitignore
-
 !*.template
+!env.example
 
 !agent/*.md
 !agent/agents/*.md
 !agent/commands/*.md
 !agent/skills/
 !agent/skills/**
-
