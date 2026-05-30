@@ -8,6 +8,7 @@ tools:
 modelRoles:
   default: cpa/gpt-5.5
   main: cpa/gpt-5.5:medium
+  commit: cpa/gpt-5.5:none
   smol: cpa/gpt-5.5:none
   slow: cpa/gpt-5.5:xhigh
   plan: cpa/gpt-5.5:xhigh
