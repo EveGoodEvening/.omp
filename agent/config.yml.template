@@ -1,11 +1,24 @@
 tools:
   approvalMode: yolo # always-ask, write, yolo
 
-defaultThinkingLevel: medium
-
 modelRoles:
   default: cpa/gpt-5.5
   plan: cpa/gpt-5.5:xhigh
-
 enabledModels:
  - cpa/gpt-5.5
+
+defaultThinkingLevel: medium
+hideThinkingBlock: true
+
+disabledProviders:
+  - claude-plugins   # Claude Code Marketplace (311 ecc:* skills)
+  - claude           # ~/.claude + .claude/
+  - codex            # ~/.codex + .codex/
+  - agents           # .agent / .agents/
+  - opencode         # ~/.config/opencode + .opencode/
+  - cursor
+  - gemini
+  - windsurf
+  - cline
+  - github
+  - vscode
