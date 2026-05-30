@@ -15,6 +15,7 @@ defaultThinkingLevel: medium
 hideThinkingBlock: true
 
 disabledProviders:
+# - claude-plugins   # Claude Code Marketplace
   - claude           # ~/.claude + .claude/
   - codex            # ~/.codex + .codex/
   - agents           # .agent / .agents/
