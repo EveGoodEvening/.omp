@@ -11,7 +11,7 @@ defaultThinkingLevel: medium
 hideThinkingBlock: true
 
 disabledProviders:
-  - claude-plugins   # Claude Code Marketplace (311 ecc:* skills)
+  - claude-plugins   # Claude Code Marketplace
   - claude           # ~/.claude + .claude/
   - codex            # ~/.codex + .codex/
   - agents           # .agent / .agents/
