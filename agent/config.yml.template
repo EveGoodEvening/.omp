@@ -26,3 +26,6 @@ disabledProviders:
   - cline
   - github
   - vscode
+
+inspect_image: 
+  enabled: true
