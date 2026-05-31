@@ -9,4 +9,3 @@ providers:
         name: gpt-5.5
         reasoning: true
         input: [text, image]
-        contextWindow: 200000
