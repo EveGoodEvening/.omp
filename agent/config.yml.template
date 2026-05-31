@@ -37,3 +37,6 @@ inspect_image:
 
 secrets: 
   enabled: true
+
+symbolPreset: unicode
+setupVersion: 1
