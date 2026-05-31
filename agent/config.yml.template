@@ -38,5 +38,12 @@ inspect_image:
 secrets: 
   enabled: true
 
+dev:
+  autoqa:
+    consent: denied
+
+providers:
+  webSearch: auto
+
 symbolPreset: unicode
 setupVersion: 1
