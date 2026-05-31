@@ -34,3 +34,6 @@ natives/
 !agent/commands/*.md
 !agent/skills/
 !agent/skills/**
+!agent/extensions/
+!agent/extensions/**/*.ts
+!agent/extensions/**/*.js
