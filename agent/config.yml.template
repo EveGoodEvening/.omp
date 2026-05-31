@@ -6,7 +6,7 @@ tools:
   approvalMode: yolo # always-ask, write, yolo
 
 modelRoles:
-  default: cpa/gpt-5.5
+  default: cpa/gpt-5.5:medium
   main: cpa/gpt-5.5:medium
   commit: cpa/gpt-5.5:none
   smol: cpa/gpt-5.5:none
