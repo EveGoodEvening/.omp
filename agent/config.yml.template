@@ -33,3 +33,6 @@ disabledProviders:
 
 inspect_image: 
   enabled: true
+
+secrets: 
+  enabled: true
