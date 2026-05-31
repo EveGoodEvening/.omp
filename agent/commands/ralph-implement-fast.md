@@ -1,4 +1,4 @@
-Use the ralph-loop plugin to implement tasks from design doc $1 and progress tracker $2 via an iterative implement-review loop.
+Use the OMP-native Ralph loop to implement tasks from design doc $1 and progress tracker $2 via an iterative implement-review loop.
 
 ## Loop behavior
 
@@ -20,22 +20,26 @@ Each iteration:
    - If remaining unchecked tasks are blocked by missing tools, credentials, approvals, or ambiguous requirements, record why they are blocked in your response and then STOP.
    - Do not treat one committed chunk as loop completion when more doable work remains.
 
-## How to invoke ralph-loop
+## OMP Ralph setup
 
-The ralph-loop skill runs a shell setup script that cannot handle backticks, special characters, or long multi-line arguments passed directly. To work around this:
+Do NOT implement tasks in this setup turn. Start the loop and stop.
 
-1. **Clean up stale loop files first:**
-   Remove any leftover files from previous runs so the user isn't prompted for permission on files that already exist:
+1. Write the resolved loop prompt to `.claude/ralph-loop-prompt.local.md` using the Write tool. Include only the resolved `Loop behavior` and `When the loop ends` sections, with actual file paths substituted for $1 and $2. Do not include this setup section.
+2. Write `.claude/ralph-loop.local.md` using the Write tool with exactly this shape:
+   ```md
+   ---
+   active: true
+   iteration: 1
+   max_iterations: 0
+   completion_promise: null
+   started_at: "omp-native"
+   ---
+
+   See .claude/ralph-loop-prompt.local.md
    ```
-   rm -f .claude/ralph-loop-prompt.local.md .claude/ralph-loop.local.md
-   ```
+3. Stop after the two files are written. The OMP extension `agent/extensions/ralph-loop.ts` will feed `See .claude/ralph-loop-prompt.local.md` back into the session after the turn ends.
 
-2. **Write the prompt to a file:**
-   Write the resolved loop behavior (with actual file paths substituted for $1 and $2) to `.claude/ralph-loop-prompt.local.md` using the Write tool. Do NOT include the "How to invoke" section — only the loop behavior and rules.
-
-3. **Invoke ralph-loop with a short, shell-safe argument:**
-   Run the setup script directly via Bash tool: `CLAUDE_CODE_SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}" "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loop/scripts/setup-ralph-loop.sh" "See .claude/ralph-loop-prompt.local.md"`
-   Do NOT pass the raw $1 or $2 text to ralph-loop — it will break if the text contains backticks, quotes, or other shell metacharacters.
+Do not use Claude Code's shell Stop hook or `setup-ralph-loop.sh`; OMP does not run that hook path.
 
 ## When the loop ends
 
@@ -48,9 +52,6 @@ Before cleaning up, run this mandatory pre-cleanup gate:
 3. If any task is **doable now**, do NOT clean up the loop files. Continue the Ralph loop at step 1 for the next coherent chunk.
 4. Only clean up when every task is `[x]`, or all remaining unchecked tasks are explicitly blocked/deferred and you have reported why.
 
-After that gate passes, clean up the loop files:
-```
-rm -f .claude/ralph-loop-prompt.local.md .claude/ralph-loop.local.md
-```
+After that gate passes, remove `.claude/ralph-loop.local.md` before the final response so the OMP extension does not queue another iteration. Then remove `.claude/ralph-loop-prompt.local.md`.
 
-**Important:** Do NOT implement tasks directly. Write the prompt file, then invoke `/ralph-loop` and let it drive the implement-review cycle. Do NOT remove the Ralph loop files merely because one chunk was committed; cleanup means the whole requested loop is complete or blocked.
+**Important:** Setup only starts the loop. The implementation/review cycle must happen in loop iterations, and cleanup means the whole requested loop is complete or blocked.

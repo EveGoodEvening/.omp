@@ -1,4 +1,4 @@
-Use the ralph-loop plugin to fix the problem below via an iterative fix-review loop.
+Use the OMP-native Ralph loop to fix the problem below via an iterative fix-review loop.
 
 ## Problem
 
@@ -18,28 +18,29 @@ $ARGUMENTS
    - If all remaining feedback was discarded (no new changes) → done.
 6. **Repeat** until converged (no new changes made in a round).
 
-## How to invoke ralph-loop
+## OMP Ralph setup
 
-The ralph-loop skill runs a shell setup script that cannot handle backticks, special characters, or long multi-line arguments passed directly. To work around this:
+Do NOT fix the problem in this setup turn. Start the loop and stop.
 
-1. **Clean up stale loop files first:**
-   Remove any leftover files from previous runs so the user isn't prompted for permission on files that already exist:
+1. Write the full problem description plus the `Loop behavior` and `When the loop ends` sections to `.claude/ralph-loop-prompt.local.md` using the Write tool. Do not include this setup section.
+2. Write `.claude/ralph-loop.local.md` using the Write tool with exactly this shape:
+   ```md
+   ---
+   active: true
+   iteration: 1
+   max_iterations: 0
+   completion_promise: null
+   started_at: "omp-native"
+   ---
+
+   See .claude/ralph-loop-prompt.local.md
    ```
-   rm -f .claude/ralph-loop-prompt.local.md .claude/ralph-loop.local.md
-   ```
+3. Stop after the two files are written. The OMP extension `agent/extensions/ralph-loop.ts` will feed `See .claude/ralph-loop-prompt.local.md` back into the session after the turn ends.
 
-2. **Write the prompt to a file:**
-   Write the full problem description (the "Problem" section above plus the "Loop behavior" section) to `.claude/ralph-loop-prompt.local.md` using the Write tool.
-
-3. **Invoke ralph-loop with a short, shell-safe argument:**
-   Run the setup script directly via Bash tool: `CLAUDE_CODE_SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}" "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loop/scripts/setup-ralph-loop.sh" "See .claude/ralph-loop-prompt.local.md"`
-   Do NOT pass the raw $ARGUMENTS text to ralph-loop — it will break if the text contains backticks, quotes, or other shell metacharacters.
+Do not use Claude Code's shell Stop hook or `setup-ralph-loop.sh`; OMP does not run that hook path.
 
 ## When the loop ends
 
-After the fix-review cycle converges, clean up the loop files:
-```
-rm -f .claude/ralph-loop-prompt.local.md .claude/ralph-loop.local.md
-```
+After the fix-review cycle converges, remove `.claude/ralph-loop.local.md` before the final response so the OMP extension does not queue another iteration. Then remove `.claude/ralph-loop-prompt.local.md`.
 
-**Important:** Do NOT fix the problem directly. Write the prompt file, then invoke `/ralph-loop` and let it drive the fix-review cycle.
+**Important:** Setup only starts the loop. The fix/review cycle must happen in loop iterations.

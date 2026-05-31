@@ -1,4 +1,4 @@
-Use the ralph-loop plugin to review and fix implementation issues via an iterative review-fix loop.
+Use the OMP-native Ralph loop to review and fix implementation issues via an iterative review-fix loop.
 
 Unlike `/ralph-fix` (which starts from a known problem), this command starts by asking Codex to review the implementation, then fixes whatever it finds.
 
@@ -28,28 +28,29 @@ On re-review iterations (after fixes), tell Codex to also review any uncommitted
 4. **Fix** — Apply the changes you decided to incorporate, then `/commit-push`.
 5. **Re-review** — You MUST go back to step 1. Do NOT emit `<promise>ALL CLEAN</promise>` here. Only Codex (in step 1) can declare ALL CLEAN — you cannot self-certify your own fixes.
 
-## How to invoke ralph-loop
+## OMP Ralph setup
 
-The ralph-loop skill runs a shell setup script that cannot handle backticks, special characters, or long multi-line arguments passed directly. To work around this:
+Do NOT start reviewing or fixing in this setup turn. Start the loop and stop.
 
-1. **Clean up stale loop files first:**
-   Remove any leftover files from previous runs so the user isn't prompted for permission on files that already exist:
+1. Write the loop behavior, review scope, and `When the loop ends` section to `.claude/ralph-loop-prompt.local.md` using the Write tool. Do not include this setup section.
+2. Write `.claude/ralph-loop.local.md` using the Write tool with exactly this shape:
+   ```md
+   ---
+   active: true
+   iteration: 1
+   max_iterations: 0
+   completion_promise: null
+   started_at: "omp-native"
+   ---
+
+   See .claude/ralph-loop-prompt.local.md
    ```
-   rm -f .claude/ralph-loop-prompt.local.md .claude/ralph-loop.local.md
-   ```
+3. Stop after the two files are written. The OMP extension `agent/extensions/ralph-loop.ts` will feed `See .claude/ralph-loop-prompt.local.md` back into the session after the turn ends.
 
-2. **Write the prompt to a file:**
-   Write the loop behavior and the raw scope description to `.claude/ralph-loop-prompt.local.md` using the Write tool. Do NOT include the "How to invoke" section — only the loop behavior and scope description.
-
-3. **Invoke ralph-loop with a short, shell-safe argument:**
-   Run the setup script directly via Bash tool: `CLAUDE_CODE_SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}" "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loop/scripts/setup-ralph-loop.sh" "See .claude/ralph-loop-prompt.local.md"`
-   Do NOT pass the raw review scope text to ralph-loop — it will break if the text contains backticks, quotes, or other shell metacharacters.
+Do not use Claude Code's shell Stop hook or `setup-ralph-loop.sh`; OMP does not run that hook path.
 
 ## When the loop ends
 
-After the review-fix cycle converges, clean up the loop files:
-```
-rm -f .claude/ralph-loop-prompt.local.md .claude/ralph-loop.local.md
-```
+After the review-fix cycle converges, remove `.claude/ralph-loop.local.md` before the final response so the OMP extension does not queue another iteration. Then remove `.claude/ralph-loop-prompt.local.md`.
 
-**Important:** Do NOT start fixing directly. Write the prompt file, then invoke `/ralph-loop` and let it drive the review-fix cycle.
+**Important:** Setup only starts the loop. The review/fix cycle must happen in loop iterations, and only Codex in step 1 can declare the implementation clean.
