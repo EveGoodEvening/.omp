@@ -285,7 +285,7 @@ Never save all work for one final commit. Commit after a green draft chunk imple
 
 ## Review and completion
 
-Step 5. **Per-chunk review-fix loop** — Verify before marking. Do not over-mark, under-mark, or skip doable tasks. Use external review via reviewer subagent or the \`codex-review-code\` skill according to availability/project convention. Fix actionable feedback, verify, commit, and re-review until clean.
+Step 5. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review: mark only completed and verified items, leave partial or blocked work unchecked with notes, and then run review. Do not over-mark, under-mark, or skip doable tasks. Use external review via reviewer subagent or the \`codex-review-code\` skill according to availability/project convention. Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
 Step 6. **Final split review** — Split the whole implementation into reviewable chunks. Review each chunk, then fix, verify, commit, and re-review until clean.
 
 ## Final gate
