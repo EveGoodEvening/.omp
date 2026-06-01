@@ -114,7 +114,7 @@ const GOAL_COMMANDS: GoalCommandSpec[] = [
 ];
 
 function goalPrompt(designDoc: string, progressTracker: string, command: GoalCommandSpec): string {
-  return `/goal Implement tasks from design doc ${designDoc} and progress tracker ${progressTracker} via a ${command.modeLabel} iterative implement-review loop.
+  return `/goal set Implement tasks from design doc ${designDoc} and progress tracker ${progressTracker} via a ${command.modeLabel} iterative implement-review loop.
 
 ## Loop behavior
 
@@ -149,7 +149,7 @@ Before the final response:
 }
 
 function goalFixPrompt(problem: string): string {
-  return `/goal Fix the problem below via an iterative fix-review loop.
+  return `/goal set Fix the problem below via an iterative fix-review loop.
 
 ## Problem
 
@@ -173,7 +173,7 @@ Repeat until the fix-review cycle converges:
 }
 
 function goalReviewImplPrompt(scope: string): string {
-  return `/goal Review and fix implementation issues via an iterative review-fix loop.
+  return `/goal set Review and fix implementation issues via an iterative review-fix loop.
 
 Unlike \`/goal-fix\` (which starts from a known problem), this command starts by asking Codex to review the implementation, then fixes whatever it finds.
 
@@ -219,25 +219,25 @@ type GogogoalCommandSpec = {
 const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
   {
     name: "gogogoal-parallel",
-    description: "Orchestrate a goal using /goal with parallel chunks",
+    description: "Orchestrate a goal with parallel chunks",
     usage: "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
     options: { parallel: true, proactive: false },
   },
   {
     name: "gogogoal",
-    description: "Orchestrate a goal using /goal without parallel chunks",
+    description: "Orchestrate a goal without parallel chunks",
     usage: "Usage: /gogogoal <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: false },
   },
   {
     name: "gogogoal-parallel-proactive",
-    description: "Orchestrate a goal using /goal with parallel chunks and proactive no-clarification decisions",
+    description: "Orchestrate a goal with parallel chunks and proactive no-clarification decisions",
     usage: "Usage: /gogogoal-parallel-proactive <goal-or-plan/checklist references>",
     options: { parallel: true, proactive: true },
   },
   {
     name: "gogogoal-proactive",
-    description: "Orchestrate a goal using /goal sequentially with proactive no-clarification decisions",
+    description: "Orchestrate a goal sequentially with proactive no-clarification decisions",
     usage: "Usage: /gogogoal-proactive <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: true },
   },
@@ -261,7 +261,7 @@ Create separate git worktrees/branches for parallel chunks. Each worktree owns o
 
 Do not implement multiple chunks in parallel. Do not create concurrent chunk worktrees or branches. If an isolated worktree/branch is necessary to protect user-owned work or keep the active chunk reviewable, use it for the single active chunk only and merge it back to the starting branch only after that chunk is fully clean.`;
 
-  return `/goal Orchestrate only for the goal below. Do not perform implementation edits, code exploration, online research, or review directly as the orchestrator; delegate those activities and coordinate the results.
+  return `Orchestrate only for the goal below. Do not perform implementation edits, code exploration, online research, or review directly as the orchestrator; delegate those activities and coordinate the results.
 
 ## Goal or references
 
@@ -298,15 +298,15 @@ async function notify(ctx: CommandContext, message: string, type: "info" | "succ
   await ctx.ui?.notify?.(message, type);
 }
 
-async function sendGoalPrompt(pi: ExtensionApi, ctx: CommandContext, prompt: string): Promise<void> {
+async function sendWorkflowPrompt(pi: ExtensionApi, ctx: CommandContext, prompt: string, label: string): Promise<void> {
   if (!pi.sendUserMessage) {
-    await notify(ctx, "Cannot start /goal because sendUserMessage is unavailable.", "error");
+    await notify(ctx, `Cannot start ${label} because sendUserMessage is unavailable.`, "error");
     return;
   }
 
   await ctx.waitForIdle?.();
   await pi.sendUserMessage(prompt, { deliverAs: "followUp" });
-  await notify(ctx, "Goal started.", "success");
+  await notify(ctx, `${label} started.`, "success");
 }
 
 function registerRawGoalCommand(
@@ -325,7 +325,7 @@ function registerRawGoalCommand(
         return;
       }
 
-      await sendGoalPrompt(pi, ctx, buildPrompt(goalOrReferences));
+      await sendWorkflowPrompt(pi, ctx, buildPrompt(goalOrReferences), `/${name}`);
     },
   });
 }
@@ -341,7 +341,7 @@ export default function goalWorkflowsExtension(pi: ExtensionApi): void {
           return;
         }
 
-        await sendGoalPrompt(pi, ctx, goalPrompt(designDoc, progressTracker, command));
+        await sendWorkflowPrompt(pi, ctx, goalPrompt(designDoc, progressTracker, command), `/${command.name}`);
       },
     });
   }
@@ -365,14 +365,14 @@ export default function goalWorkflowsExtension(pi: ExtensionApi): void {
         return;
       }
 
-      await sendGoalPrompt(pi, ctx, goalFixPrompt(problem));
+      await sendWorkflowPrompt(pi, ctx, goalFixPrompt(problem), "/goal-fix");
     },
   });
 
   pi.registerCommand?.("goal-review-impl", {
     description: "Review and fix implementation issues using /goal",
     handler: async (args, ctx) => {
-      await sendGoalPrompt(pi, ctx, goalReviewImplPrompt(commandArgsToRaw(args)));
+      await sendWorkflowPrompt(pi, ctx, goalReviewImplPrompt(commandArgsToRaw(args)), "/goal-review-impl");
     },
   });
 }
