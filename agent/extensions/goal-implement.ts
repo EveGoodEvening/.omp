@@ -72,6 +72,22 @@ function commandArgsToTokens(args: unknown): string[] {
   return [];
 }
 
+function commandArgsToRaw(args: unknown): string {
+  if (Array.isArray(args)) return args.map((arg) => String(arg)).join(" ").trim();
+  if (typeof args === "string") return args.trim();
+  if (!args || typeof args !== "object") return "";
+
+  const record = args as Record<string, unknown>;
+  for (const key of ["ARGUMENTS", "arguments", "raw", "input"]) {
+    const value = record[key];
+    if (typeof value === "string") return value.trim();
+  }
+
+  const maybeArgs = record.args;
+  if (Array.isArray(maybeArgs)) return maybeArgs.map((arg) => String(arg)).join(" ").trim();
+  return "";
+}
+
 type GoalCommandSpec = {
   name: string;
   description: string;
@@ -132,8 +148,75 @@ Before the final response:
 4. Only stop when every task is \`[x]\`, or all remaining unchecked tasks are explicitly blocked/deferred and you have reported why.`;
 }
 
+function goalFixPrompt(problem: string): string {
+  return `/goal Fix the problem below via an iterative fix-review loop.
+
+## Problem
+
+${problem}
+
+## Loop behavior
+
+Repeat until the fix-review cycle converges:
+
+1. **Assess** — Understand the problem. Decide what changes are needed and whether each aspect is worth fixing (correct, in-scope, valuable) before writing any code.
+2. **Fix** — Apply the changes you decided to make.
+3. **Review** — Use the \`codex-review-code\` skill to get a code review of all changes.
+4. **Evaluate** — Judge the review feedback. For each item, classify it as:
+   - **Incorporate** — correct and valuable → fix it.
+   - **Discard** — wrong, out-of-scope, or low-priority → dismiss it.
+5. **Decide whether to loop again:**
+   - If you incorporated any feedback and made new changes → go back to step 3 and re-review the updated code.
+   - If Codex approves with no actionable feedback → stop.
+   - If all remaining feedback was discarded and no new changes were made → stop.
+6. **Repeat** until converged (no new changes made in a round).`;
+}
+
+function goalReviewImplPrompt(scope: string): string {
+  return `/goal Review and fix implementation issues via an iterative review-fix loop.
+
+Unlike \`/goal-fix\` (which starts from a known problem), this command starts by asking Codex to review the implementation, then fixes whatever it finds.
+
+## Review scope
+
+${scope || "uncommitted"}
+
+Pass the scope description directly to Codex — let Codex resolve it into concrete diff commands. Examples of valid scope descriptions:
+- \`uncommitted\` or empty → uncommitted changes
+- \`last 3 commits\` → last 3 commits
+- \`branch X vs branch Y\` → diff between two branches
+- \`<commit-sha>\` → a specific commit
+- \`<file-path>\` → changes in a specific file
+
+On re-review iterations (after fixes), tell Codex to also review any uncommitted working tree changes alongside the original scope. Codex sees the current state of the repo each time, so fixes are automatically visible.
+
+## Loop behavior
+
+1. **Review** — Run the \`codex-review-code\` skill asking Codex to review the scope. On re-review iterations, tell Codex to include uncommitted changes too.
+   - If Codex finds no issues → output \`ALL CLEAN\` and stop.
+2. **Evaluate** — Judge the review feedback. For each item, classify it as:
+   - **Incorporate** — correct and valuable → fix it.
+   - **Discard** — wrong, out-of-scope, or low-priority → dismiss it.
+3. **Decide:**
+   - If nothing should be incorporated (all feedback was discarded or there was no actionable feedback) → stop.
+   - Otherwise → proceed to step 4.
+4. **Fix** — Apply the changes you decided to incorporate, then invoke \`/commit-push\`.
+5. **Re-review** — Go back to step 1. Do not emit \`ALL CLEAN\` here. Only Codex in step 1 can declare ALL CLEAN; do not self-certify your own fixes.`;
+}
+
 async function notify(ctx: CommandContext, message: string, type: "info" | "success" | "warning" | "error"): Promise<void> {
   await ctx.ui?.notify?.(message, type);
+}
+
+async function sendGoalPrompt(pi: ExtensionApi, ctx: CommandContext, prompt: string): Promise<void> {
+  if (!pi.sendUserMessage) {
+    await notify(ctx, "Cannot start /goal because sendUserMessage is unavailable.", "error");
+    return;
+  }
+
+  await ctx.waitForIdle?.();
+  await pi.sendUserMessage(prompt, { deliverAs: "followUp" });
+  await notify(ctx, "Goal started.", "success");
 }
 
 export default function goalImplementExtension(pi: ExtensionApi): void {
@@ -147,15 +230,28 @@ export default function goalImplementExtension(pi: ExtensionApi): void {
           return;
         }
 
-        if (!pi.sendUserMessage) {
-          await notify(ctx, "Cannot start /goal because sendUserMessage is unavailable.", "error");
-          return;
-        }
-
-        await ctx.waitForIdle?.();
-        await pi.sendUserMessage(goalPrompt(designDoc, progressTracker, command), { deliverAs: "followUp" });
-        await notify(ctx, "Goal implementation started.", "success");
+        await sendGoalPrompt(pi, ctx, goalPrompt(designDoc, progressTracker, command));
       },
     });
   }
+
+  pi.registerCommand?.("goal-fix", {
+    description: "Fix a problem using /goal and Codex review",
+    handler: async (args, ctx) => {
+      const problem = commandArgsToRaw(args);
+      if (!problem) {
+        await notify(ctx, "Usage: /goal-fix <problem>", "warning");
+        return;
+      }
+
+      await sendGoalPrompt(pi, ctx, goalFixPrompt(problem));
+    },
+  });
+
+  pi.registerCommand?.("goal-review-impl", {
+    description: "Review and fix implementation issues using /goal",
+    handler: async (args, ctx) => {
+      await sendGoalPrompt(pi, ctx, goalReviewImplPrompt(commandArgsToRaw(args)));
+    },
+  });
 }
