@@ -72,8 +72,33 @@ function commandArgsToTokens(args: unknown): string[] {
   return [];
 }
 
-function goalPrompt(designDoc: string, progressTracker: string): string {
-  return `/goal Implement tasks from design doc ${designDoc} and progress tracker ${progressTracker} via a strict iterative implement-review loop.
+type GoalCommandSpec = {
+  name: string;
+  description: string;
+  modeLabel: string;
+  reviewInstructions: string;
+  fixInstruction: string;
+};
+
+const GOAL_COMMANDS: GoalCommandSpec[] = [
+  {
+    name: "goal-implement-fast",
+    description: "Implement tracked tasks using /goal and subagent review",
+    modeLabel: "fast",
+    reviewInstructions: "Run a subagent to check:",
+    fixInstruction: "Fix according to the subagent's feedback unless the subagent says all good.",
+  },
+  {
+    name: "goal-implement-strict",
+    description: "Implement tracked tasks using /goal and Codex review",
+    modeLabel: "strict",
+    reviewInstructions: "Run the `codex-review-code` skill to check:",
+    fixInstruction: "Fix according to Codex's feedback unless Codex says all good.",
+  },
+];
+
+function goalPrompt(designDoc: string, progressTracker: string, command: GoalCommandSpec): string {
+  return `/goal Implement tasks from design doc ${designDoc} and progress tracker ${progressTracker} via a ${command.modeLabel} iterative implement-review loop.
 
 ## Loop behavior
 
@@ -85,11 +110,11 @@ Repeat until the progress tracker is complete or every remaining unchecked task 
    - If proceeding would require guessing — unclear design intent, ambiguous API choice, non-obvious edge-case handling, or choosing between materially different approaches — invoke \`/codex-ask\` to discuss before committing. Resume an existing codex session only if there's a known prior session on the same unresolved question; otherwise start fresh.
 3. **Verify** — Run \`cargo check\` (Rust) or the relevant build command. Run related tests. The goal is that each iteration ends in a compilable, test-passing state — but intermediate non-compilation during implementation is acceptable.
 4. **Mark** completed tasks \`[x]\` in ${progressTracker}.
-5. **Review** — Run the \`codex-review-code\` skill to check:
+5. **Review** — ${command.reviewInstructions}
    - No over-marking: every \`[x]\` task is actually implemented
    - No under-marking: no \`[ ]\` task has actually been implemented already
    - No skips: no doable unchecked tasks remain that should have been done in this chunk
-6. **Fix** according to Codex's feedback unless Codex says all good.
+6. **Fix** — ${command.fixInstruction}
 7. **Converge** — If you made changes from the review → go back to step 5 and re-review. If no new changes → invoke \`/commit-push\`, then reread ${progressTracker}.
    - If any unchecked task is still doable without guessing or external blockers, continue at step 1 for the next coherent chunk.
    - If remaining unchecked tasks are blocked by missing tools, credentials, approvals, ambiguous requirements, or explicit deferral, report why and stop.
@@ -112,23 +137,25 @@ async function notify(ctx: CommandContext, message: string, type: "info" | "succ
 }
 
 export default function goalImplementExtension(pi: ExtensionApi): void {
-  pi.registerCommand?.("goal-implement-strict", {
-    description: "Implement tracked tasks using /goal and Codex review",
-    handler: async (args, ctx) => {
-      const [designDoc, progressTracker] = commandArgsToTokens(args);
-      if (!designDoc || !progressTracker) {
-        await notify(ctx, "Usage: /goal-implement-strict <design-doc> <progress-tracker>", "warning");
-        return;
-      }
+  for (const command of GOAL_COMMANDS) {
+    pi.registerCommand?.(command.name, {
+      description: command.description,
+      handler: async (args, ctx) => {
+        const [designDoc, progressTracker] = commandArgsToTokens(args);
+        if (!designDoc || !progressTracker) {
+          await notify(ctx, `Usage: /${command.name} <design-doc> <progress-tracker>`, "warning");
+          return;
+        }
 
-      if (!pi.sendUserMessage) {
-        await notify(ctx, "Cannot start /goal because sendUserMessage is unavailable.", "error");
-        return;
-      }
+        if (!pi.sendUserMessage) {
+          await notify(ctx, "Cannot start /goal because sendUserMessage is unavailable.", "error");
+          return;
+        }
 
-      await ctx.waitForIdle?.();
-      await pi.sendUserMessage(goalPrompt(designDoc, progressTracker), { deliverAs: "followUp" });
-      await notify(ctx, "Goal implementation started.", "success");
-    },
-  });
+        await ctx.waitForIdle?.();
+        await pi.sendUserMessage(goalPrompt(designDoc, progressTracker, command), { deliverAs: "followUp" });
+        await notify(ctx, "Goal implementation started.", "success");
+      },
+    });
+  }
 }
