@@ -230,15 +230,15 @@ const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
     options: { parallel: false, weakClarification: false },
   },
   {
-    name: "gogogoal-parallel-weak",
-    description: "Orchestrate a goal using /goal with parallel chunks and proactive decisions",
-    usage: "Usage: /gogogoal-parallel-weak <goal-or-plan/checklist references>",
+    name: "gogogoal-parallel-proactive",
+    description: "Orchestrate a goal using /goal with parallel chunks and proactive no-clarification decisions",
+    usage: "Usage: /gogogoal-parallel-proactive <goal-or-plan/checklist references>",
     options: { parallel: true, weakClarification: true },
   },
   {
-    name: "gogogoal-weak",
-    description: "Orchestrate a goal using /goal sequentially with proactive decisions",
-    usage: "Usage: /gogogoal-weak <goal-or-plan/checklist references>",
+    name: "gogogoal-proactive",
+    description: "Orchestrate a goal using /goal sequentially with proactive no-clarification decisions",
+    usage: "Usage: /gogogoal-proactive <goal-or-plan/checklist references>",
     options: { parallel: false, weakClarification: true },
   },
 ];
