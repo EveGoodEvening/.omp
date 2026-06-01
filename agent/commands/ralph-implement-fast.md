@@ -10,11 +10,11 @@ Each iteration:
    - If proceeding would require guessing — unclear design intent, ambiguous API choice, non-obvious edge-case handling, or choosing between materially different approaches — invoke `/codex-ask` to discuss before committing. Resume an existing codex session only if there's a known prior session on the same unresolved question; otherwise start fresh.
 3. **Verify** — Run `cargo check` (Rust) or the relevant build command. Run related tests. The goal is that the iteration ends in a compilable, test-passing state — but intermediate non-compilation during implementation is acceptable.
 4. **Mark** completed tasks `[x]` in $2.
-5. **Review** — Run a subagent to check:
+5. **Review** — Run a reviewer subagent to check:
    - No over-marking: every `[x]` task is actually implemented
    - No under-marking: no `[ ]` task has actually been implemented already
    - No skips: no doable unchecked tasks remain that should have been done in this chunk
-6. **Fix** according to the subagent's feedback unless the subagent says all good.
+6. **Fix** according to the reviewer subagent's feedback unless the reviewer subagent says all good.
 7. **Converge** — If you made changes from the review → go back to step 5 (re-review). If no new changes → `/commit-push` the changes, then reread $2 before stopping:
    - If any unchecked task is still doable without guessing or external blockers, continue at step 1 for the next coherent chunk.
    - If remaining unchecked tasks are blocked by missing tools, credentials, approvals, or ambiguous requirements, record why they are blocked in your response and then STOP.

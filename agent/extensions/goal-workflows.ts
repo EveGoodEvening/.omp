@@ -101,8 +101,8 @@ const GOAL_COMMANDS: GoalCommandSpec[] = [
     name: "goal-implement-fast",
     description: "Implement tracked tasks using /goal and subagent review",
     modeLabel: "fast",
-    reviewInstructions: "Run a subagent to check:",
-    fixInstruction: "Fix according to the subagent's feedback unless the subagent says all good.",
+    reviewInstructions: "Run a reviewer subagent to check:",
+    fixInstruction: "Fix according to the reviewer subagent's feedback unless the reviewer subagent says all good.",
   },
   {
     name: "goal-implement-strict",
