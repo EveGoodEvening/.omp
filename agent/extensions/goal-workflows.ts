@@ -219,7 +219,7 @@ async function sendGoalPrompt(pi: ExtensionApi, ctx: CommandContext, prompt: str
   await notify(ctx, "Goal started.", "success");
 }
 
-export default function goalImplementExtension(pi: ExtensionApi): void {
+export default function goalWorkflowsExtension(pi: ExtensionApi): void {
   for (const command of GOAL_COMMANDS) {
     pi.registerCommand?.(command.name, {
       description: command.description,
