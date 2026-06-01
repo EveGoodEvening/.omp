@@ -204,7 +204,7 @@ On re-review iterations (after fixes), tell Codex to also review any uncommitted
 5. **Re-review** — Go back to step 1. Do not emit \`ALL CLEAN\` here. Only Codex in step 1 can declare ALL CLEAN; do not self-certify your own fixes.`;
 }
 
-function gogogoalPrompt(goalOrReferences: string): string {
+function gogogoalParallelPrompt(goalOrReferences: string): string {
   return `/goal Orchestrate only for the goal below. Do not perform implementation edits, code exploration, online research, or review directly as the orchestrator; delegate those activities and coordinate the results.
 
 ## Goal or references
@@ -221,9 +221,44 @@ Step 2. **Plan durably** — Create or update a durable plan and checklist/progr
 Step 3. **Chunk the work** — Split the plan into dependency-ordered, reviewable, verifiable, committable chunks. Identify which chunks can run in parallel.
 Step 4. **Implement by delegation only** — Implement chunks only through task/subagent workers. The orchestrator must not make real implementation edits itself. Dependent chunks wait for prerequisites.
 
-## Worktree policy
+## Parallel worktree policy
 
 Create separate git worktrees/branches for parallel chunks. Each worktree owns one bounded checklist slice. Never let parallel chunks touch the same files, interfaces, migrations, generated artifacts, or checklist items. Merge back to the starting branch only after a chunk is fully clean.
+
+## Commit policy
+
+Never save all work for one final commit. Commit after a green draft chunk implementation, after each green review-fix change, and after a fully clean chunk. Do not commit a red tree. Do not push unless explicitly requested by the user or repository workflow. Only commit current-chunk owned changes and tracker updates; protect pre-existing/user-owned changes.
+
+## Review and completion
+
+Step 5. **Per-chunk review-fix loop** — Verify before marking. Do not over-mark, under-mark, or skip doable tasks. Use external review via reviewer subagent or the \`codex-review-code\` skill according to availability/project convention. Fix actionable feedback, verify, commit, and re-review until clean.
+Step 6. **Final split review** — Split the whole implementation into reviewable chunks. Review each chunk, then fix, verify, commit, and re-review until clean.
+
+## Final gate
+
+Before stopping, reread the checklist/progress tracker. Classify every unchecked task as either doable now or blocked/deferred. Continue if any unchecked task is doable now. Stop only when all tasks are checked or every remaining unchecked task has a concrete blocker.`;
+}
+
+function gogogoalPrompt(goalOrReferences: string): string {
+  return `/goal Orchestrate only for the goal below. Do not perform implementation edits, code exploration, online research, or review directly as the orchestrator; delegate those activities and coordinate the results.
+
+## Goal or references
+
+${goalOrReferences}
+
+## Semantics
+
+Treat the raw argument above as either a new goal or references to existing plan/checklist artifacts.
+
+Step 0. **Resume first** — Detect and read existing plan, checklist, and progress artifacts for the same goal before creating anything new. If actionable artifacts exist, resume at implementation/chunking instead of creating a competing plan.
+Step 1. **Gather context** — Gather enough information by delegating codebase exploration/research and using available docs/tools. Ask the user only when a decision materially changes the outcome and cannot be resolved by tools or documentation.
+Step 2. **Plan durably** — Create or update a durable plan and checklist/progress tracker so future sessions can resume the work.
+Step 3. **Chunk the work** — Split the plan into dependency-ordered, reviewable, verifiable, committable chunks, then schedule them sequentially even when multiple chunks are independent.
+Step 4. **Implement by delegation only** — Implement exactly one selected chunk at a time through task/subagent workers. The orchestrator must not make real implementation edits itself. Finish each chunk's implementation, verification, review-fix loop, and commit before selecting the next chunk.
+
+## Sequential chunk policy
+
+Do not implement multiple chunks in parallel. Do not create concurrent chunk worktrees or branches. If an isolated worktree/branch is necessary to protect user-owned work or keep the active chunk reviewable, use it for the single active chunk only and merge it back to the starting branch only after that chunk is fully clean.
 
 ## Commit policy
 
@@ -254,6 +289,27 @@ async function sendGoalPrompt(pi: ExtensionApi, ctx: CommandContext, prompt: str
   await notify(ctx, "Goal started.", "success");
 }
 
+function registerRawGoalCommand(
+  pi: ExtensionApi,
+  name: string,
+  description: string,
+  usage: string,
+  buildPrompt: (goalOrReferences: string) => string,
+): void {
+  pi.registerCommand?.(name, {
+    description,
+    handler: async (args, ctx) => {
+      const goalOrReferences = commandArgsToRaw(args);
+      if (!goalOrReferences) {
+        await notify(ctx, usage, "warning");
+        return;
+      }
+
+      await sendGoalPrompt(pi, ctx, buildPrompt(goalOrReferences));
+    },
+  });
+}
+
 export default function goalWorkflowsExtension(pi: ExtensionApi): void {
   for (const command of GOAL_COMMANDS) {
     pi.registerCommand?.(command.name, {
@@ -270,18 +326,21 @@ export default function goalWorkflowsExtension(pi: ExtensionApi): void {
     });
   }
 
-  pi.registerCommand?.("gogogoal", {
-    description: "Orchestrate a goal using /goal",
-    handler: async (args, ctx) => {
-      const goalOrReferences = commandArgsToRaw(args);
-      if (!goalOrReferences) {
-        await notify(ctx, "Usage: /gogogoal <goal-or-plan/checklist references>", "warning");
-        return;
-      }
+  registerRawGoalCommand(
+    pi,
+    "gogogoal-parallel",
+    "Orchestrate a goal using /goal with parallel chunks",
+    "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
+    gogogoalParallelPrompt,
+  );
 
-      await sendGoalPrompt(pi, ctx, gogogoalPrompt(goalOrReferences));
-    },
-  });
+  registerRawGoalCommand(
+    pi,
+    "gogogoal",
+    "Orchestrate a goal using /goal without parallel chunks",
+    "Usage: /gogogoal <goal-or-plan/checklist references>",
+    gogogoalPrompt,
+  );
 
   pi.registerCommand?.("goal-fix", {
     description: "Fix a problem using /goal and Codex review",
