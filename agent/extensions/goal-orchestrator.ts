@@ -136,7 +136,7 @@ async function sendWorkflowPrompt(pi: ExtensionApi, ctx: CommandContext, prompt:
   }
 
   await ctx.waitForIdle?.();
-  await pi.sendUserMessage(prompt, { deliverAs: "followUp" });
+  await pi.sendUserMessage(prompt, { deliverAs: "nextTurn" });
   await notify(ctx, `${label} started.`, "success");
 }
 
