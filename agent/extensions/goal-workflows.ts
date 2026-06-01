@@ -206,7 +206,7 @@ On re-review iterations (after fixes), tell Codex to also review any uncommitted
 
 type GogogoalPromptOptions = {
   parallel: boolean;
-  weakClarification: boolean;
+  proactive: boolean;
 };
 
 type GogogoalCommandSpec = {
@@ -221,30 +221,30 @@ const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
     name: "gogogoal-parallel",
     description: "Orchestrate a goal using /goal with parallel chunks",
     usage: "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
-    options: { parallel: true, weakClarification: false },
+    options: { parallel: true, proactive: false },
   },
   {
     name: "gogogoal",
     description: "Orchestrate a goal using /goal without parallel chunks",
     usage: "Usage: /gogogoal <goal-or-plan/checklist references>",
-    options: { parallel: false, weakClarification: false },
+    options: { parallel: false, proactive: false },
   },
   {
     name: "gogogoal-parallel-proactive",
     description: "Orchestrate a goal using /goal with parallel chunks and proactive no-clarification decisions",
     usage: "Usage: /gogogoal-parallel-proactive <goal-or-plan/checklist references>",
-    options: { parallel: true, weakClarification: true },
+    options: { parallel: true, proactive: true },
   },
   {
     name: "gogogoal-proactive",
     description: "Orchestrate a goal using /goal sequentially with proactive no-clarification decisions",
     usage: "Usage: /gogogoal-proactive <goal-or-plan/checklist references>",
-    options: { parallel: false, weakClarification: true },
+    options: { parallel: false, proactive: true },
   },
 ];
 
 function gogogoalPrompt(goalOrReferences: string, options: GogogoalPromptOptions): string {
-  const gatherInstruction = options.weakClarification
+  const gatherInstruction = options.proactive
     ? "Gather enough information by delegating codebase exploration/research and using available docs/tools. Do not ask the user for clarification in Step 1; research, inspect, decide proactively, and record the rationale and assumptions in the durable plan."
     : "Gather enough information by delegating codebase exploration/research and using available docs/tools. Ask the user only when a decision materially changes the outcome and cannot be resolved by tools or documentation.";
   const chunkInstruction = options.parallel
