@@ -140,7 +140,7 @@ async function sendWorkflowPrompt(pi: ExtensionApi, ctx: CommandContext, prompt:
   await notify(ctx, `${label} started.`, "success");
 }
 
-function registerRawGoalCommand(
+function registerGogogoalCommand(
   pi: ExtensionApi,
   name: string,
   description: string,
@@ -161,9 +161,9 @@ function registerRawGoalCommand(
   });
 }
 
-export default function goalWorkflowsExtension(pi: ExtensionApi): void {
+export default function goalOrchestratorExtension(pi: ExtensionApi): void {
   for (const command of GOGOGOAL_COMMANDS) {
-    registerRawGoalCommand(
+    registerGogogoalCommand(
       pi,
       command.name,
       command.description,
