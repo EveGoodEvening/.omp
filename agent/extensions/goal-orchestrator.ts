@@ -106,14 +106,14 @@ Treat the raw argument above as either a new goal or references to existing plan
 Step 0. **Resume first** — Detect and read existing plan, checklist, and progress artifacts for the same goal before creating anything new. If actionable artifacts exist, resume at implementation/chunking instead of creating a competing plan.
 Step 1. **Gather context** — ${gatherInstruction}
 Step 2. **Plan durably** — Create or update a durable plan and checklist/progress tracker so future sessions can resume the work.
-Step 3. **Chunk the work** — ${chunkInstruction}
+Step 3. **Chunk the work** — ${chunkInstruction} Record the chunks in the durable plan/checklist, then git commit the new or updated planning artifacts before implementation begins.
 Step 4. **Implement by delegation only** — ${implementationInstruction}
 
 ${chunkPolicy}
 
 ## Commit policy
 
-Never save all work for one final commit. Commit after a green draft chunk implementation, after each green review-fix change, and after a fully clean chunk. Do not commit a red tree. Do not push unless explicitly requested by the user or repository workflow. Only commit current-chunk owned changes and tracker updates; protect pre-existing/user-owned changes.
+Never save all work for one final commit. Use Conventional Commit messages for every commit. Commit after creating and chunking a new plan/checklist, after a green draft chunk implementation, after each green review-fix change, and after a fully clean chunk. Do not commit a red tree. Do not push unless explicitly requested by the user or repository workflow. Only commit current-chunk owned changes and tracker updates; protect pre-existing/user-owned changes.
 
 ## Review and completion
 
