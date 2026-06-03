@@ -51,25 +51,25 @@ type GogogoalCommandSpec = {
 const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
   {
     name: "gogogoal-parallel",
-    description: "Orchestrate a goal with parallel chunks",
+    description: "Orchestrate a goal workflow with parallel chunks",
     usage: "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
     options: { parallel: true, proactive: false },
   },
   {
     name: "gogogoal",
-    description: "Orchestrate a goal without parallel chunks",
+    description: "Orchestrate a goal workflow without parallel chunks",
     usage: "Usage: /gogogoal <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: false },
   },
   {
     name: "gogogoal-parallel-proactive",
-    description: "Orchestrate a goal with parallel chunks and proactive no-clarification decisions",
+    description: "Orchestrate a goal workflow with parallel chunks and proactive no-clarification decisions",
     usage: "Usage: /gogogoal-parallel-proactive <goal-or-plan/checklist references>",
     options: { parallel: true, proactive: true },
   },
   {
     name: "gogogoal-proactive",
-    description: "Orchestrate a goal sequentially with proactive no-clarification decisions",
+    description: "Orchestrate a goal workflow sequentially with proactive no-clarification decisions",
     usage: "Usage: /gogogoal-proactive <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: true },
   },
@@ -77,8 +77,8 @@ const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
 
 function gogogoalPrompt(goalOrReferences: string, options: GogogoalPromptOptions): string {
   const gatherInstruction = options.proactive
-    ? "Gather enough information by delegating codebase exploration/research and using available docs/tools. Do not ask the user for clarification in Step 1; research, inspect, decide proactively, and record the rationale and assumptions in the durable plan."
-    : "Gather enough information by delegating codebase exploration/research and using available docs/tools. Ask the user only when a decision materially changes the outcome and cannot be resolved by tools or documentation.";
+    ? "Gather enough information by a workflow delegating codebase exploration/research and using available docs/tools. Do not ask the user for clarification in Step 1; research, inspect, decide proactively, and record the rationale and assumptions in the durable plan."
+    : "Gather enough information by a workflow delegating codebase exploration/research and using available docs/tools. Ask the user only when a decision materially changes the outcome and cannot be resolved by tools or documentation.";
   const chunkInstruction = options.parallel
     ? "Split the plan into dependency-ordered, reviewable, verifiable, committable chunks. Identify which chunks can run in parallel."
     : "Split the plan into dependency-ordered, reviewable, verifiable, committable chunks, then schedule them sequentially even when multiple chunks are independent.";
@@ -117,8 +117,8 @@ Never save all work for one final commit. Use Conventional Commit messages for e
 
 ## Review and completion
 
-Step 5. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review: mark only completed and verified items, leave partial or blocked work unchecked with notes, and then run review. Do not over-mark, under-mark, or skip doable tasks. Use external review via reviewer subagent or the \`codex-review-code\` skill according to availability/project convention. Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
-Step 6. **Final split review** — Split the whole implementation into reviewable chunks. Review each chunk, then fix, verify, commit, and re-review until clean.
+Step 5. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review: mark only completed and verified items, leave partial or blocked work unchecked with notes, and then run review. Do not over-mark, under-mark, or skip doable tasks. Use review workflow / the \`codex-review-code\` skill / external review via reviewer subagent depending on the best-fit. Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
+Step 6. **Final split review** — Split the whole implementation into reviewable chunks. For each review chunk, use review workflow / the \`codex-review-code\` skill / external review via reviewer subagent depending on the best-fit, review the chunk, then fix, verify, commit, and re-review until clean.
 
 ## Final gate
 
