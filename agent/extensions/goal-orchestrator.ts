@@ -371,7 +371,7 @@ Treat the raw argument above as either a new goal or references to existing plan
 
 Step 0. **Resume first** — Detect and read existing plan, checklist, and progress artifacts for the same goal before creating anything new. If actionable artifacts exist, resume at implementation/chunking instead of creating a competing plan.
 Step 1. **Gather context** — ${gatherInstruction}
-Step 2. **Plan durably** — Create or update a durable plan and checklist/progress tracker so future sessions can resume the work.
+Step 2. **Plan durably** — Delegate to a dedicated plan subagent to create or update the durable plan and checklist/progress tracker so future sessions can resume the work. The orchestrator coordinates and validates the planning artifact only; it must not design the plan itself.
 Step 3. **Chunk the work** — ${chunkInstruction} Record the chunks in the durable plan/checklist, then git commit the new or updated planning artifacts before implementation begins.
 Step 4. **Implement by delegation only** — ${implementationInstruction}
 
