@@ -88,10 +88,10 @@ function gogogoalPrompt(goalOrReferences: string, options: GogogoalPromptOptions
   const chunkPolicy = options.parallel
     ? `## Parallel worktree policy
 
-Create separate git worktrees/branches for parallel chunks. Each worktree owns one bounded checklist slice. Never let parallel chunks touch the same files, interfaces, migrations, generated artifacts, or checklist items. Merge back to the starting branch only after a chunk is fully clean.`
+Create separate git worktrees/branches for parallel chunks. Each worktree owns one bounded checklist slice. Never let parallel chunks touch the same files, interfaces, migrations, generated artifacts, or checklist items. Merge back to the starting branch only after a chunk is fully clean. After the merge succeeds, remove that chunk worktree with \`git worktree remove\` and prune stale worktree metadata before considering the chunk closed.`
     : `## Sequential chunk policy
 
-Do not implement multiple chunks in parallel. Do not create concurrent chunk worktrees or branches. If an isolated worktree/branch is necessary to protect user-owned work or keep the active chunk reviewable, use it for the single active chunk only and merge it back to the starting branch only after that chunk is fully clean.`;
+Do not implement multiple chunks in parallel. Do not create concurrent chunk worktrees or branches. If an isolated worktree/branch is necessary to protect user-owned work or keep the active chunk reviewable, use it for the single active chunk only and merge it back to the starting branch only after that chunk is fully clean. After the merge succeeds, remove that chunk worktree with \`git worktree remove\` and prune stale worktree metadata before considering the chunk closed.`;
 
   return `orchestrate only for the goal below. Do not perform implementation edits, code exploration, online research, or review directly as the orchestrator; delegate those activities and coordinate the results.
 
