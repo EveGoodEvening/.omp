@@ -1,4 +1,4 @@
-/goal Implement all doable tasks from design doc $1 and progress tracker $2 using an iterative implement-review loop until the tracker is complete or only explicitly blocked/deferred tasks remain.
+/goal set Implement all doable tasks from design doc $1 and progress tracker $2 using an iterative implement-review loop until the tracker is complete or only explicitly blocked/deferred tasks remain.
 
 Verification:
 - At the start of each iteration, read $1 and $2 and identify unchecked `- [ ]` tasks.

@@ -1,4 +1,4 @@
-/goal Review and fix implementation issues in the requested scope via an iterative Codex review-fix loop.
+/goal set Review and fix implementation issues in the requested scope via an iterative Codex review-fix loop.
 
 Review scope:
 $ARGUMENTS

@@ -1,4 +1,4 @@
-/goal Fix the problem described below using an iterative fix-review loop.
+/goal set Fix the problem described below using an iterative fix-review loop.
 
 Problem:
 $ARGUMENTS
