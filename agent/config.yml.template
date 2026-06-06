@@ -6,16 +6,16 @@ tools:
   approvalMode: yolo # always-ask, write, yolo
 
 modelRoles:
-  default: cpa/gpt-5.5:medium
-  main: cpa/gpt-5.5:medium
-  task: cpa/gpt-5.5:medium
-  commit: cpa/gpt-5.5:none
-  smol: cpa/gpt-5.5:none
-  slow: cpa/gpt-5.5:xhigh
-  plan: cpa/gpt-5.5:xhigh
+  default: cpa-responses/gpt-5.5:medium
+  main: cpa-responses/gpt-5.5:medium
+  task: cpa-responses/gpt-5.5:medium
+  commit: cpa-responses/gpt-5.5:medium
+  smol: cpa-responses/gpt-5.5:none
+  slow: cpa-responses/gpt-5.5:xhigh
+  plan: cpa-responses/gpt-5.5:xhigh
 enabledModels:
- - cpa/gpt-5.5
- - cpa/kimi-k2p6-turbo
+ - cpa-responses/gpt-5.5
+ - cpa-completions/kimi-k2p6-turbo
 
 defaultThinkingLevel: medium
 hideThinkingBlock: true
