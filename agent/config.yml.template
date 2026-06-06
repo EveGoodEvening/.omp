@@ -1,9 +1,19 @@
+setupVersion: 1
+
+dev:
+  autoqa:
+    consent: denied
+
+symbolPreset: unicode
 theme: 
   dark: dark-slate
   light: light
 
 tools:
   approvalMode: yolo # always-ask, write, yolo
+
+secrets: 
+  enabled: true
 
 modelRoles:
   default: cpa-responses/gpt-5.5:medium
@@ -36,15 +46,5 @@ disabledProviders:
 inspect_image: 
   enabled: true
 
-secrets: 
-  enabled: true
-
-dev:
-  autoqa:
-    consent: denied
-
 providers:
   webSearch: auto
-
-symbolPreset: unicode
-setupVersion: 1
