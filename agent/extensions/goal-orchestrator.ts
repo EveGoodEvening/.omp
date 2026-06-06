@@ -176,7 +176,7 @@ The root cause is unclear, the fix requires a product decision, verification can
 }
 
 function goalImplPrompt(designDoc: string, progressTracker: string, reviewMode: string): string {
-  const reviewModePrompt = reviewMode.includes("fast") ? "" : "- no bugs: no non-trivial bugs";
+  const reviewModePrompt = reviewMode.includes("fast") ? "" : "\n   - no bugs: no non-trivial bugs";
   return `/goal set Implement all doable tasks from design doc ${designDoc} and progress tracker ${progressTracker} using an iterative implement-review loop until the tracker is complete or only explicitly blocked/deferred tasks remain.
 
 Verification:
@@ -191,7 +191,7 @@ Constraints:
 - Do not leave already-implemented tasks unchecked.
 - Do not skip doable unchecked tasks just because one coherent chunk has been committed.
 - Do not guess on unclear design intent, ambiguous APIs, non-obvious edge cases, or materially different implementation approaches.
-- If guessing would be required, discuss with a plan subagent before implementing. Can do multi-round discussion until the decisions are clear/finalized.
+- If guessing would be required, discuss with a plan subagent before implementing. Continue discussion for as many rounds as needed until the decisions are clear and finalized.
 - Intermediate non-compilation during implementation is acceptable, but each iteration must converge back to passing verification.
 
 Boundaries:
@@ -210,8 +210,7 @@ Iteration policy:
 7. Run a reviewer subagent to check:
    - no over-marking: every \`[x]\` task is actually implemented;
    - no under-marking: no \`[ ]\` task has already been implemented;
-   - no skips: no doable unchecked task remains that should have been included in this chunk.
-   ${reviewModePrompt}
+   - no skips: no doable unchecked task remains that should have been included in this chunk.${reviewModePrompt}
 8. Fix according to the reviewer subagent feedback unless the reviewer subagent says all good.
 9. If review fixes changed anything, rerun another reviewer subagent and repeat until clean.
 10. When review is clean, run \`/commit-push\`.
