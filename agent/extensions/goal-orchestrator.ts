@@ -373,18 +373,19 @@ Step 0. **Resume first** — Detect and read existing plan, checklist, and progr
 Step 1. **Gather context** — ${gatherInstruction}
 Step 2. **Plan durably** — Delegate to a dedicated plan subagent to create or update the durable plan and checklist/progress tracker so future sessions can resume the work. The orchestrator coordinates and validates the planning artifact only; it must not design the plan itself.
 Step 3. **Chunk the work** — ${chunkInstruction} Record the chunks in the durable plan/checklist, then git commit the new or updated planning artifacts before implementation begins.
-Step 4. **Implement by delegation only** — ${implementationInstruction}
+Step 4. **Plan review gate** — Before implementation begins, delegate to an independent plan or reviewer subagent to review the durable plan, checklist/progress tracker, and chunking for goal coverage, feasibility, verifiability, dependency order, reviewable/committable chunk boundaries, parallel-safety, missing migration/testing/rollback/risk items, and unresolved decisions. Fix actionable planning feedback, then rerun the plan review until clean or all remaining findings are explicitly classified as discarded with reasons. Pause instead of implementing if a finding requires a user/product decision or the loop reaches 5 plan review rounds without convergence.
+Step 5. **Implement by delegation only** — ${implementationInstruction}
 
 ${chunkPolicy}
 
 ## Commit policy
 
-Never save all work for one final commit. Use Conventional Commit messages for every commit. Commit after creating and chunking a new plan/checklist, after a green draft chunk implementation, after each green review-fix change, and after a fully clean chunk. Do not commit a red tree. Do not push unless explicitly requested by the user or repository workflow. Only commit current-chunk owned changes and tracker updates; protect pre-existing/user-owned changes.
+Never save all work for one final commit. Use Conventional Commit messages for every commit. Commit after creating, chunking, and satisfying the plan review gate for new or updated planning artifacts, after a green draft chunk implementation, after each green review-fix change, and after a fully clean chunk. Do not commit a red tree. Do not push unless explicitly requested by the user or repository workflow. Only commit current-chunk owned changes and tracker updates; protect pre-existing/user-owned changes.
 
 ## Review and completion
 
-Step 5. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review: mark only completed and verified items, leave partial or blocked work unchecked with notes, and then run review. Do not over-mark, under-mark, or skip doable tasks. Use reviewer subagent or even a review workflow depending on the best-fit. Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
-Step 6. **Final split review** — Split the whole implementation into reviewable chunks. For each review chunk, use reviewer subagent or even a review workflow depending on the best-fit, review the chunk, then fix, verify, commit, and re-review until clean.
+Step 6. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review: mark only completed and verified items, leave partial or blocked work unchecked with notes, and then run review. Do not over-mark, under-mark, or skip doable tasks. Use reviewer subagent or even a review workflow depending on the best-fit. Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
+Step 7. **Final split review** — Split the whole implementation into reviewable chunks. For each review chunk, use reviewer subagent or even a review workflow depending on the best-fit, review the chunk, then fix, verify, commit, and re-review until clean.
 
 ## Final gate
 
