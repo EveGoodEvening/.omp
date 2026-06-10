@@ -343,8 +343,8 @@ const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
 
 function gogogoalPrompt(goalOrReferences: string, options: GogogoalPromptOptions): string {
   const gatherInstruction = options.proactive
-    ? "Gather enough information by a workflow delegating codebase exploration/research and using available docs/tools. Do not ask the user for clarification in Step 1; research, inspect, decide proactively, and record the rationale and assumptions in the durable plan."
-    : "Gather enough information by a workflow delegating codebase exploration/research and using available docs/tools. Ask the user only when a decision materially changes the outcome and cannot be resolved by tools or documentation.";
+    ? "Gather enough information by a workflowz delegating codebase exploration/research and using available docs/tools. Do not ask the user for clarification in Step 1; research, inspect, decide proactively, and record the rationale and assumptions in the durable plan."
+    : "Gather enough information by a workflowz delegating codebase exploration/research and using available docs/tools. Ask the user only when a decision materially changes the outcome and cannot be resolved by tools or documentation.";
   const chunkInstruction = options.parallel
     ? "Split the plan into dependency-ordered, reviewable, verifiable, committable chunks. Identify which chunks can run in parallel."
     : "Split the plan into dependency-ordered, reviewable, verifiable, committable chunks, then schedule them sequentially even when multiple chunks are independent.";
@@ -384,8 +384,8 @@ Never save all work for one final commit. Use Conventional Commit messages for e
 
 ## Review and completion
 
-Step 6. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review: mark only completed and verified items, leave partial or blocked work unchecked with notes, and then run review. Do not over-mark, under-mark, or skip doable tasks. Use reviewer subagent or even a review workflow depending on the best-fit. Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
-Step 7. **Final split review** — Split the whole implementation into reviewable chunks. For each review chunk, use reviewer subagent or even a review workflow depending on the best-fit, review the chunk, then fix, verify, commit, and re-review until clean.
+Step 6. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review: mark only completed and verified items, leave partial or blocked work unchecked with notes, and then run review. Do not over-mark, under-mark, or skip doable tasks. Use reviewer subagent or even a review workflowz depending on the best-fit. Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
+Step 7. **Final split review** — Split the whole implementation into reviewable chunks. For each review chunk, use reviewer subagent or even a review workflowz depending on the best-fit, review the chunk, then fix, verify, commit, and re-review until clean.
 
 ## Final gate
 
