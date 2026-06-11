@@ -399,7 +399,7 @@ Step 7. **Final split review** — Split the whole implementation into reviewabl
 
 ## Final gate
 
-Before stopping, reread the checklist/progress tracker. For every unchecked task, quote the exact task, classify it as doable now or blocked/deferred, and record any blocker/deferred reason in the durable tracker. Continue if any unchecked task is doable now. Stop only when all tasks are checked or every remaining unchecked task has a concrete blocker/deferred reason recorded in the tracker. A phase boundary, clean chunk commit, or completed review-fix loop is never a stopping point by itself.`;
+Before stopping, reread the checklist/progress tracker. For every unchecked task, quote the exact task, classify it as doable now or blocked/deferred, and record any blocker/deferred reason in the durable tracker. Commit any final tracker-only blocker/deferred updates before stopping so the recorded state survives resume and branch changes. Continue if any unchecked task is doable now. Stop only when all tasks are checked or every remaining unchecked task has a concrete blocker/deferred reason recorded in the tracker. A phase boundary, clean chunk commit, or completed review-fix loop is never a stopping point by itself.`;
 }
 
 async function notify(ctx: CommandContext, message: string, type: "info" | "success" | "warning" | "error"): Promise<void> {
