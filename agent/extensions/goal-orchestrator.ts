@@ -369,6 +369,14 @@ ${goalOrReferences}
 
 Treat the raw argument above as either a new goal or references to existing plan/checklist artifacts.
 
+## Scope completion invariant
+
+When the goal references a durable plan/checklist, treat every unchecked, doable item in that checklist as in scope. "Implement the next chunk" means start with the next unchecked chunk, not stop after it, unless the user explicitly says to implement only that single chunk or to stop after it.
+
+For sequential mode, select the next dependency-ready unchecked chunk, implement it, verify it, run its review-fix loop, update the tracker, commit it, then immediately reread the tracker and select the next dependency-ready unchecked chunk. A clean chunk commit is not a yield point while another unchecked chunk is doable.
+
+Do not classify later chunks as future/deferred merely because one chunk completed. A later chunk may be deferred only if it has a concrete blocker, dependency, product decision, or explicit user-approved scope reduction recorded in the durable tracker. Split-turn summaries, resumed context, or "next chunk" language must not shrink the durable checklist scope unless they explicitly say "only this chunk" or "stop after this chunk".
+
 Step 0. **Resume first** — Detect and read existing plan, checklist, and progress artifacts for the same goal before creating anything new. If actionable artifacts exist, resume from them instead of creating a competing plan.
   - **In-progress resume:** If a durable plan/checklist/progress tracker exists and there is evidence implementation has already started (checked or in-progress tracker items, implementation commits, worktree changes tied to checklist items, or notes naming an active chunk/step), do not re-chunk the plan and do not run the plan review gate again. Resume at Step 5 or Step 6 with the current/next doable unchecked item. Only update planning artifacts enough to record current status, blockers, or newly discovered constraints.
   - **Pre-implementation resume:** If artifacts exist but there is no evidence implementation has started, continue with context gathering as needed, chunking, and the plan review gate before implementation begins.
@@ -391,7 +399,7 @@ Step 7. **Final split review** — Split the whole implementation into reviewabl
 
 ## Final gate
 
-Before stopping, reread the checklist/progress tracker. Classify every unchecked task as either doable now or blocked/deferred. Continue if any unchecked task is doable now. Stop only when all tasks are checked or every remaining unchecked task has a concrete blocker.`;
+Before stopping, reread the checklist/progress tracker. For every unchecked task, quote the exact task, classify it as doable now or blocked/deferred, and record any blocker/deferred reason in the durable tracker. Continue if any unchecked task is doable now. Stop only when all tasks are checked or every remaining unchecked task has a concrete blocker/deferred reason recorded in the tracker. A phase boundary, clean chunk commit, or completed review-fix loop is never a stopping point by itself.`;
 }
 
 async function notify(ctx: CommandContext, message: string, type: "info" | "success" | "warning" | "error"): Promise<void> {
