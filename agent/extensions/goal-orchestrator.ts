@@ -310,9 +310,12 @@ Pause if:
 - The loop exceeds 5 review-fix iterations.`;
 }
 
+type ReviewerEffort = "xhigh";
+
 type GogogoalPromptOptions = {
   parallel: boolean;
   proactive: boolean;
+  reviewerEffort?: ReviewerEffort;
 };
 
 type GogogoalCommandSpec = {
@@ -330,10 +333,22 @@ const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
     options: { parallel: true, proactive: false },
   },
   {
+    name: "gogogoal-parallel-xhreview",
+    description: "Orchestrate a goal workflow with parallel chunks and xhigh reviewer subagents",
+    usage: "Usage: /gogogoal-parallel-xhreview <goal-or-plan/checklist references>",
+    options: { parallel: true, proactive: false, reviewerEffort: "xhigh" },
+  },
+  {
     name: "gogogoal",
     description: "Orchestrate a goal workflow without parallel chunks",
     usage: "Usage: /gogogoal <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: false },
+  },
+  {
+    name: "gogogoal-xhreview",
+    description: "Orchestrate a goal workflow without parallel chunks and with xhigh reviewer subagents",
+    usage: "Usage: /gogogoal-xhreview <goal-or-plan/checklist references>",
+    options: { parallel: false, proactive: false, reviewerEffort: "xhigh" },
   },
   {
     name: "gogogoal-parallel-proactive",
@@ -342,10 +357,22 @@ const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
     options: { parallel: true, proactive: true },
   },
   {
+    name: "gogogoal-parallel-proactive-xhreview",
+    description: "Orchestrate a goal workflow with parallel chunks, proactive no-clarification decisions, and xhigh reviewer subagents",
+    usage: "Usage: /gogogoal-parallel-proactive-xhreview <goal-or-plan/checklist references>",
+    options: { parallel: true, proactive: true, reviewerEffort: "xhigh" },
+  },
+  {
     name: "gogogoal-proactive",
     description: "Orchestrate a goal workflow sequentially with proactive no-clarification decisions",
     usage: "Usage: /gogogoal-proactive <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: true },
+  },
+  {
+    name: "gogogoal-proactive-xhreview",
+    description: "Orchestrate a goal workflow sequentially with proactive no-clarification decisions and xhigh reviewer subagents",
+    usage: "Usage: /gogogoal-proactive-xhreview <goal-or-plan/checklist references>",
+    options: { parallel: false, proactive: true, reviewerEffort: "xhigh" },
   },
 ];
 
@@ -366,6 +393,13 @@ Create separate git worktrees/branches for parallel chunks. Each worktree owns o
     : `## Sequential chunk policy
 
 Do not implement multiple chunks in parallel. Do not create concurrent chunk worktrees or branches. If an isolated worktree/branch is necessary to protect user-owned work or keep the active chunk reviewable, use it for the single active chunk only and merge it back to the starting branch only after that chunk is fully clean. After the merge succeeds, remove that chunk worktree with \`git worktree remove\` and prune stale worktree metadata before considering the chunk closed.`;
+  const reviewerEffortPolicy = options.reviewerEffort === "xhigh"
+    ? `
+
+## Reviewer subagent effort policy
+
+For every reviewer subagent or review workflowz in the plan review gate, per-chunk review-fix loop, final split review, and all re-review rounds, explicitly request xhigh thinking/reasoning effort. Do not apply xhigh effort to implementation workers unless a separate instruction requires it.`
+    : "";
 
   return `orchestrate only for the goal below. Do not perform implementation edits, code exploration, online research, or review directly as the orchestrator; delegate those activities and coordinate the results.
 
@@ -394,7 +428,7 @@ Step 3. **Chunk the work** — ${chunkInstruction} Record the chunks in the dura
 Step 4. **Plan review gate** — Before implementation begins, delegate to an independent plan or reviewer subagent to review the durable plan, checklist/progress tracker, and chunking for goal coverage, feasibility, verifiability, dependency order, reviewable/committable chunk boundaries, parallel-safety, missing migration/testing/rollback/risk items, and unresolved decisions. Fix actionable planning feedback, then rerun the plan review until clean or all remaining findings are explicitly classified as discarded with reasons. Pause instead of implementing if a finding requires a user/product decision or the loop reaches 5 plan review rounds without convergence. Skip this step for an in-progress resume unless implementation is blocked by missing, contradictory, or unsafe planning information.
 Step 5. **Implement by delegation only** — ${implementationInstruction}
 
-${chunkPolicy}
+${chunkPolicy}${reviewerEffortPolicy}
 
 ## Commit policy
 
