@@ -1,6 +1,6 @@
-# Oh My Pi Setup
+# `oh-my-pi` Setup
 
-This repository contains my local Oh My Pi configuration, including agents, commands, skills, extensions, and plugin-related settings.
+This repository contains my local `oh-my-pi` configuration, including agents, commands, skills, extensions, and plugin-related settings.
 
 ## Purpose
 
