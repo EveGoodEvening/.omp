@@ -90,6 +90,8 @@ function parseShellLikeArgs(raw: string): string[] {
   return parts;
 }
 
+type ReviewerEffort = "xhigh";
+
 type GoalPrefillCommandSpec = {
   name: string;
   description: string;
@@ -117,6 +119,15 @@ const GOAL_PREFILL_COMMANDS: GoalPrefillCommandSpec[] = [
     },
   },
   {
+    name: "goal-fix-xhreview",
+    description: "Draft a /goal fix prompt with xhigh reviewer subagents into the editor",
+    usage: "Usage: /goal-fix-xhreview <problem>",
+    buildPrompt: (rawArgs) => {
+      if (!rawArgs) return undefined;
+      return goalFixPrompt(rawArgs, "xhigh");
+    },
+  },
+  {
     name: "goal-impl-fast",
     description: "Draft a fast /goal implementation prompt into the editor",
     usage: "Usage: /goal-impl-fast <design-doc> <progress-tracker>",
@@ -129,14 +140,39 @@ const GOAL_PREFILL_COMMANDS: GoalPrefillCommandSpec[] = [
     buildPrompt: (_rawArgs, parts) => goalImplPrefillPrompt(parts, goalImplStrictPrompt),
   },
   {
+    name: "goal-impl-strict-xhreview",
+    description: "Draft a strict /goal implementation prompt with xhigh reviewer subagents into the editor",
+    usage: "Usage: /goal-impl-strict-xhreview <design-doc> <progress-tracker>",
+    buildPrompt: (_rawArgs, parts) => goalImplPrefillPrompt(
+      parts,
+      (designDoc, progressTracker) => goalImplPrompt(designDoc, progressTracker, "strict", "xhigh"),
+    ),
+  },
+  {
     name: "goal-review-impl",
     description: "Draft a /goal implementation-review prompt into the editor",
     usage: "Usage: /goal-review-impl <review-scope>",
     buildPrompt: (rawArgs) => goalReviewImplPrompt(rawArgs),
   },
+  {
+    name: "goal-review-impl-xhreview",
+    description: "Draft a /goal implementation-review prompt with xhigh reviewer subagents into the editor",
+    usage: "Usage: /goal-review-impl-xhreview <review-scope>",
+    buildPrompt: (rawArgs) => goalReviewImplPrompt(rawArgs, "xhigh"),
+  },
 ];
 
-function goalFixPrompt(problem: string): string {
+function reviewerEffortPrompt(reviewerEffort?: ReviewerEffort): string {
+  if (reviewerEffort !== "xhigh") return "";
+
+  return `
+
+Reviewer subagent effort policy:
+For every reviewer subagent in every review and re-review round, explicitly request xhigh thinking/reasoning effort.`;
+}
+
+function goalFixPrompt(problem: string, reviewerEffort?: ReviewerEffort): string {
+  const reviewerPrompt = reviewerEffortPrompt(reviewerEffort);
   return `/goal set Fix the problem described below using an iterative fix-review loop.
 
 Problem:
@@ -166,7 +202,7 @@ Each loop iteration:
    - Incorporate: correct, valuable, and in scope; fix it.
    - Discard: wrong, out of scope, or low priority; explain why it is dismissed.
 6. If any review feedback was incorporated and new changes were made, rerun verification and request another reviewer subagent review.
-7. Continue until converged.
+7. Continue until converged.${reviewerPrompt}
 
 Stop when:
 The problem is fixed, verification evidence supports completion, and either reviewer subagent has no actionable feedback or all remaining feedback has been explicitly discarded without making further changes.
@@ -175,8 +211,9 @@ Pause if:
 The root cause is unclear, the fix requires a product decision, verification cannot be run, required permissions are missing, the change would affect risky/shared systems, or the loop exceeds 5 review rounds without convergence.`;
 }
 
-function goalImplPrompt(designDoc: string, progressTracker: string, reviewMode: string): string {
+function goalImplPrompt(designDoc: string, progressTracker: string, reviewMode: string, reviewerEffort?: ReviewerEffort): string {
   const reviewModePrompt = reviewMode.includes("fast") ? "" : "\n   - no bugs: no non-trivial bugs";
+  const reviewerPrompt = reviewerEffortPrompt(reviewerEffort);
   return `/goal set Implement all doable tasks from design doc ${designDoc} and progress tracker ${progressTracker} using an iterative implement-review loop until the tracker is complete or only explicitly blocked/deferred tasks remain.
 
 Verification:
@@ -214,7 +251,7 @@ Iteration policy:
 8. Fix according to the reviewer subagent feedback unless the reviewer subagent says all good.
 9. If review fixes changed anything, rerun another reviewer subagent and repeat until clean.
 10. When review is clean, run \`/commit-push\`.
-11. Reread ${progressTracker}. If any unchecked task is still doable now, continue the loop with the next coherent chunk.
+11. Reread ${progressTracker}. If any unchecked task is still doable now, continue the loop with the next coherent chunk.${reviewerPrompt}
 
 Stop when:
 - All tasks in ${progressTracker} are \`[x]\`, in which case output \`<promise>IMPLEMENTATION COMPLETE</promise>\`; or
@@ -236,7 +273,8 @@ function goalImplStrictPrompt(designDoc: string, progressTracker: string): strin
   return goalImplPrompt(designDoc, progressTracker, "strict");
 }
 
-function goalReviewImplPrompt(reviewScope: string): string {
+function goalReviewImplPrompt(reviewScope: string, reviewerEffort?: ReviewerEffort): string {
+  const reviewerPrompt = reviewerEffortPrompt(reviewerEffort);
   return `/goal set Review and fix implementation issues in the requested scope via a review-fix loop.
 
 Review scope:
@@ -262,7 +300,7 @@ Review:
 - Give each reviewer subagent only its assigned chunk plus enough original-scope context to understand boundaries.
 - On the first review, ask reviewer subagents to review the chunks derived from the original scope.
 - On every re-review after fixes, rerun Scope planning against the original scope plus any uncommitted working tree changes, then review every resulting chunk.
-- Merge all reviewer subagent reports into one consolidated finding list before evaluating findings.
+- Merge all reviewer subagent reports into one consolidated finding list before evaluating findings.${reviewerPrompt}
 
 Evaluate:
 - For each consolidated reviewer finding, classify it as:
@@ -309,8 +347,6 @@ Pause if:
 - Checks fail for reasons unrelated to the incorporated fixes.
 - The loop exceeds 5 review-fix iterations.`;
 }
-
-type ReviewerEffort = "xhigh";
 
 type GogogoalPromptOptions = {
   parallel: boolean;
