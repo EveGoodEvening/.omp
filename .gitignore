@@ -28,6 +28,7 @@ natives/
 !.gitignore
 !*.template
 !env.example
+!README.md
 
 !agent/*.md
 !agent/agents/*.md
