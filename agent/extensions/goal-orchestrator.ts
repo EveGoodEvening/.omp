@@ -406,7 +406,7 @@ Step 6. **Per-chunk review-fix loop** — After implementing a chunk and passing
 - mark only completed and verified items;
 - leave partial or blocked work unchecked with notes;
 - pass the design/checklist/progress tracker context to a review workflowz;
-- explicitly ask the reviewer to audit both implementation bugs, security issues, and task accounting:
+- explicitly ask the reviewer to audit implementation bugs, security issues, and task accounting:
   - no over-marking: every checked task is actually implemented and verified;
   - no under-marking: no unchecked task has already been implemented;
   - no skips: no doable unchecked task was omitted from the chunk without a concrete blocker, dependency, product decision, or explicit user-approved scope reduction.
