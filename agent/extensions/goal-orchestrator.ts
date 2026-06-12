@@ -405,13 +405,13 @@ Never save all work for one final commit. Use Conventional Commit messages for e
 Step 6. **Per-chunk review-fix loop** — After implementing a chunk and passing its required verification, update the checklist/progress tracker before starting the chunk review:
 - mark only completed and verified items;
 - leave partial or blocked work unchecked with notes;
-- pass the design/checklist/progress tracker context to the reviewer subagent or even a review workflow (depending on the best-fit);
+- pass the design/checklist/progress tracker context to a review workflowz;
 - explicitly ask the reviewer to audit both implementation bugs, security issues, and task accounting:
   - no over-marking: every checked task is actually implemented and verified;
   - no under-marking: no unchecked task has already been implemented;
   - no skips: no doable unchecked task was omitted from the chunk without a concrete blocker, dependency, product decision, or explicit user-approved scope reduction.
 Fix actionable feedback, verify, update the checklist again if task status changed, commit, and re-review until clean.
-Step 7. **Final split review** — Split the whole implementation into reviewable chunks. For each review chunk, use reviewer subagent or even a review workflowz depending on the best-fit, review the chunk, then fix, verify, commit, and re-review until clean.
+Step 7. **Final split review** — Split the whole implementation into reviewable chunks. For each review chunk, use a review workflowz, review the chunk, then fix, verify, commit, and re-review until clean.
 
 ## Final gate
 
