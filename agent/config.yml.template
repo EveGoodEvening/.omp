@@ -25,7 +25,6 @@ modelRoles:
   plan: cpa-responses/gpt-5.5:xhigh
 enabledModels:
  - cpa-responses/gpt-5.5
- - cpa-completions/kimi-k2p6-turbo
 
 defaultThinkingLevel: medium
 hideThinkingBlock: true
