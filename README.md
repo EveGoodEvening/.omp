@@ -8,23 +8,11 @@ I use this setup to customize my coding assistant workflow and keep reusable aut
 
 ## Marketplace and Plugins of Interest
 
-I am interested in the official Anthropic Claude plugin marketplace and the following plugins.
-
-Add the marketplace:
+I am interested in the following plugin marketplaces and the following plugins.
 
 ```bash
 /marketplace add anthropics/claude-plugins-official
-```
-
-Install the plugins:
-
-```bash
-/marketplace install code-modernization@claude-plugins-official
-/marketplace install code-review@claude-plugins-official
-/marketplace install code-simplifier@claude-plugins-official
-/marketplace install frontend-design@claude-plugins-official
-/marketplace install pr-review-toolkit@claude-plugins-official
-/marketplace install security-guidance@claude-plugins-official
-/marketplace install skill-creator@claude-plugins-official
-/marketplace install context7@claude-plugins-official
+/marketplace install ... # see `enabledPlugins` in https://github.com/EveGoodEvening/.claude/blob/master/settings.json
+/marketplace add nexu-io/open-design
+/marketplace install open-design@open-design
 ```
