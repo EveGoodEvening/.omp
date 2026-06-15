@@ -12,10 +12,10 @@ type BlockResult = {
   reason: string;
 };
 
-const ENV_FILE_SEGMENT = /(^|[/\\])\.env(?:[^/\\]*)?(?=[:/\\]|$)/;
+const BLOCKED_ENV_FILE_SEGMENT = /(^|[/\\])\.env(?:\.(?!(?:example|template)(?=[:/\\]|$))[^:/\\]*)?(?=[:/\\]|$)/;
 
-function isEnvPath(value: unknown): value is string {
-  return typeof value === "string" && ENV_FILE_SEGMENT.test(value);
+function isBlockedEnvPath(value: unknown): value is string {
+  return typeof value === "string" && BLOCKED_ENV_FILE_SEGMENT.test(value);
 }
 
 function editTargetsEnvFile(input: Record<string, unknown> | undefined): boolean {
@@ -29,7 +29,7 @@ function editTargetsEnvFile(input: Record<string, unknown> | undefined): boolean
     const hashIndex = header.indexOf("#");
     const path = (hashIndex === -1 ? header : header.slice(0, hashIndex)).trim();
 
-    if (isEnvPath(path)) return true;
+    if (isBlockedEnvPath(path)) return true;
   }
 
   return false;
@@ -43,13 +43,13 @@ export default function denyEnvFiles(pi: ExtensionApi): void {
   pi.on("tool_call", (event) => {
     switch (event.toolName) {
       case "read":
-        if (isEnvPath(event.input?.path)) {
+        if (isBlockedEnvPath(event.input?.path)) {
           return block("Reading .env files is blocked by policy.");
         }
         return;
 
       case "write":
-        if (isEnvPath(event.input?.path)) {
+        if (isBlockedEnvPath(event.input?.path)) {
           return block("Writing .env files is blocked by policy.");
         }
         return;
