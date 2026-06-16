@@ -31,10 +31,10 @@ natives/
 !README.md
 
 !agent/*.md
-!agent/agents/*.md
-!agent/commands/*.md
+!agent/agents/**
+!agent/commands/**
 !agent/skills/
 !agent/skills/**
 !agent/extensions/
-!agent/extensions/**/*.ts
-!agent/extensions/**/*.js
+!agent/extensions/**
+!agent/extensions/**
