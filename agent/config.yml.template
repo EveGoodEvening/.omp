@@ -23,6 +23,7 @@ modelRoles:
   smol: cpa-responses/gpt-5.5:none
   slow: cpa-responses/gpt-5.5:xhigh
   plan: cpa-responses/gpt-5.5:xhigh
+  advisor: cpa-responses/gpt-5.5:xhigh
 enabledModels:
  - cpa-responses/gpt-5.5
 
