@@ -281,29 +281,22 @@ Review scope:
 ${reviewScope}
 
 Outcome:
-Run an iterative review-fix loop until reviewer subagents report the implementation is clean across all reviewable chunks, or until there are no correct/actionable findings to incorporate.
+Run an iterative review-fix loop until reviewwe subagent reports the implementation is clean, or until there are no correct/actionable findings to incorporate.
 
-Scope planning:
-- Do not resolve the review scope yourself into concrete git diff commands, files, commits, or chunks.
-- First run a plan subagent with the raw review scope description.
-- Ask the plan subagent to resolve the review scope and split it into reviewable chunks.
-- The plan subagent must not perform the implementation review. It only defines the concrete review scope and chunks.
-- Valid raw scope examples include:
+Review:
+- Run a reviewer subagent
+- Pass the review scope description directly to the review subagent. Do not resolve it yourself into concrete git diff commands.
+- Valid scope examples include:
   - empty or \`uncommitted\` → uncommitted changes
   - \`last 3 commits\`
   - \`branch X vs branch Y\`
   - \`<commit-sha>\`
   - \`<file-path>\`
-
-Review:
-- Run one reviewer subagent per reviewable chunk from the plan subagent. If there are N chunks, launch N reviewer subagents.
-- Give each reviewer subagent only its assigned chunk plus enough original-scope context to understand boundaries.
-- On the first review, ask reviewer subagents to review the chunks derived from the original scope.
-- On every re-review after fixes, rerun Scope planning against the original scope plus any uncommitted working tree changes, then review every resulting chunk.
-- Merge all reviewer subagent reports into one consolidated finding list before evaluating findings.${reviewerPrompt}
+- On the first review, ask review subagent to review the original scope.
+- On every re-review after fixes, ask review subagent to review the original scope plus any uncommitted working tree changes.${reviewerPrompt}
 
 Evaluate:
-- For each consolidated reviewer finding, classify it as:
+- For each review subagent finding, classify it as:
   - Incorporate — correct, relevant, and worth fixing.
   - Discard — incorrect, out of scope, duplicate, low-priority, or not worth changing.
 - Briefly record the classification and reason.
@@ -316,31 +309,30 @@ Fix:
 - Then run \`/commit-push\`.
 
 Iteration policy:
-- After every fix and \`/commit-push\`, return to Scope planning and Review.
+- After every fix and \`/commit-push\`, return to Review.
 - Do not self-certify the implementation as clean.
 - Do not emit \`<promise>ALL CLEAN</promise>\` after making fixes.
-- Only reviewer subagents, during a Review step, can justify declaring the implementation clean, and every reviewed chunk must be clean.
+- Only review subagent, during a Review step, can justify declaring the implementation clean.
 
 Verification:
-- Evidence must include the plan subagent's resolved scope/chunk plan for the current iteration.
-- Evidence must include all reviewer subagent outputs for the current iteration.
+- Evidence must include review subagent review output for the current iteration.
 - Evidence for fixes must include the relevant test/check commands or an explanation if no automated check applies.
-- Re-review must include the current repo state, including uncommitted changes, so reviewer subagents can see the fixes.
+- Re-review must include the current repo state, including uncommitted changes, so review subagent can see the fixes.
 
 Constraints:
-- Fix only implementation issues found by reviewer subagents that are classified Incorporate.
+- Fix only implementation issues found by review subagent that are classified Incorporate.
 - Do not change files outside the reviewed scope unless required to correctly fix an incorporated issue.
 - Do not bypass hooks, skip checks, force-push, or use destructive git operations.
-- Do not emit \`<promise>ALL CLEAN</promise>\` unless every reviewer subagent reports no issues in the Review step.
+- Do not emit \`<promise>ALL CLEAN</promise>\` unless review subagent reports no issues in the Review step.
 
 Boundaries:
 - Allowed writes: files necessary to fix incorporated findings.
 - Forbidden writes: unrelated documentation, unrelated refactors, generated artifacts, secrets, dependency changes unless explicitly required by an incorporated finding.
 
 Stop when:
-- Every reviewer subagent finds no issues in a Review step; then output exactly:
+- review subagent finds no issues in a Review step; then output exactly:
   \`<promise>ALL CLEAN</promise>\`
-- Or reviewer subagent findings are all classified Discard with no actionable fixes remaining; summarize why and stop without claiming ALL CLEAN.
+- Or review subagent findings are all classified Discard with no actionable fixes remaining; summarize why and stop without claiming ALL CLEAN.
 
 Pause if:
 - A finding requires a product decision, risky migration, destructive action, dependency downgrade/removal, security-sensitive change, or scope expansion.
