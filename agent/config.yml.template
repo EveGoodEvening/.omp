@@ -52,4 +52,5 @@ inspect_image:
   enabled: true
 
 providers:
-  webSearch: auto
+  webSearch: codex # auto
+  image: openai # auto
