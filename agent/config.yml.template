@@ -16,14 +16,15 @@ secrets:
   enabled: true
 
 modelRoles:
-  default: cpa-responses/gpt-5.6-terra:medium
-  main: cpa-responses/gpt-5.6-terra:medium
-  task: cpa-responses/gpt-5.6-terra:medium
-  commit: cpa-responses/gpt-5.6-luna:medium
-  smol: cpa-responses/gpt-5.6-luna:medium
+  default: cpa-responses/gpt-5.6-sol:medium
+  main: cpa-responses/gpt-5.6-sol:medium
+  task: cpa-responses/gpt-5.6-sol:medium
+  commit: cpa-responses/gpt-5.6-terra:medium
+  smol: cpa-responses/gpt-5.6-terra:medium
   tiny: cpa-responses/gpt-5.6-luna:medium
   slow: cpa-responses/gpt-5.6-sol:xhigh
   plan: cpa-responses/gpt-5.6-sol:xhigh
+  designer: cpa-responses/gpt-5.6-sol:xhigh
   advisor: cpa-responses/gpt-5.6-sol:xhigh
 enabledModels:
   - cpa-responses/gpt-5.6-sol
