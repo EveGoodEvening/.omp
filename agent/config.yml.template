@@ -19,9 +19,9 @@ modelRoles:
   default: cpa-responses/gpt-5.6-sol:medium
   main: cpa-responses/gpt-5.6-sol:medium
   task: cpa-responses/gpt-5.6-sol:medium
-  commit: cpa-responses/gpt-5.6-terra:medium
-  smol: cpa-responses/gpt-5.6-terra:medium
-  tiny: cpa-responses/gpt-5.6-luna:medium
+  commit: cpa-responses/gpt-5.6-luna:high
+  smol: cpa-responses/gpt-5.6-luna:high
+  tiny: cpa-responses/gpt-5.6-luna:high
   slow: cpa-responses/gpt-5.6-sol:max
   plan: cpa-responses/gpt-5.6-sol:max
   designer: cpa-responses/gpt-5.6-sol:max
