@@ -22,10 +22,10 @@ modelRoles:
   commit: cpa-responses/gpt-5.6-terra:medium
   smol: cpa-responses/gpt-5.6-terra:medium
   tiny: cpa-responses/gpt-5.6-luna:medium
-  slow: cpa-responses/gpt-5.6-sol:xhigh
-  plan: cpa-responses/gpt-5.6-sol:xhigh
-  designer: cpa-responses/gpt-5.6-sol:xhigh
-  advisor: cpa-responses/gpt-5.6-sol:xhigh
+  slow: cpa-responses/gpt-5.6-sol:max
+  plan: cpa-responses/gpt-5.6-sol:max
+  designer: cpa-responses/gpt-5.6-sol:max
+  advisor: cpa-responses/gpt-5.6-sol:max
 enabledModels:
   - cpa-responses/gpt-5.6-sol
   - cpa-responses/gpt-5.6-terra
