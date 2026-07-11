@@ -118,15 +118,15 @@ const GOAL_PREFILL_COMMANDS: GoalPrefillCommandSpec[] = [
       return goalFixPrompt(rawArgs);
     },
   },
-  {
-    name: "goal-fix-xhreview",
-    description: "Draft a /goal fix prompt with xhigh reviewer subagents into the editor",
-    usage: "Usage: /goal-fix-xhreview <problem>",
-    buildPrompt: (rawArgs) => {
-      if (!rawArgs) return undefined;
-      return goalFixPrompt(rawArgs, "xhigh");
-    },
-  },
+  // {
+  //   name: "goal-fix-xhreview",
+  //   description: "Draft a /goal fix prompt with xhigh reviewer subagents into the editor",
+  //   usage: "Usage: /goal-fix-xhreview <problem>",
+  //   buildPrompt: (rawArgs) => {
+  //     if (!rawArgs) return undefined;
+  //     return goalFixPrompt(rawArgs, "xhigh");
+  //   },
+  // },
   {
     name: "goal-impl-fast",
     description: "Draft a fast /goal implementation prompt into the editor",
@@ -139,27 +139,27 @@ const GOAL_PREFILL_COMMANDS: GoalPrefillCommandSpec[] = [
     usage: "Usage: /goal-impl-strict <design-doc> <progress-tracker>",
     buildPrompt: (_rawArgs, parts) => goalImplPrefillPrompt(parts, goalImplStrictPrompt),
   },
-  {
-    name: "goal-impl-strict-xhreview",
-    description: "Draft a strict /goal implementation prompt with xhigh reviewer subagents into the editor",
-    usage: "Usage: /goal-impl-strict-xhreview <design-doc> <progress-tracker>",
-    buildPrompt: (_rawArgs, parts) => goalImplPrefillPrompt(
-      parts,
-      (designDoc, progressTracker) => goalImplPrompt(designDoc, progressTracker, "strict", "xhigh"),
-    ),
-  },
+  // {
+  //   name: "goal-impl-strict-xhreview",
+  //   description: "Draft a strict /goal implementation prompt with xhigh reviewer subagents into the editor",
+  //   usage: "Usage: /goal-impl-strict-xhreview <design-doc> <progress-tracker>",
+  //   buildPrompt: (_rawArgs, parts) => goalImplPrefillPrompt(
+  //     parts,
+  //     (designDoc, progressTracker) => goalImplPrompt(designDoc, progressTracker, "strict", "xhigh"),
+  //   ),
+  // },
   {
     name: "goal-review-impl",
     description: "Draft a /goal implementation-review prompt into the editor",
     usage: "Usage: /goal-review-impl <review-scope>",
     buildPrompt: (rawArgs) => goalReviewImplPrompt(rawArgs),
   },
-  {
-    name: "goal-review-impl-xhreview",
-    description: "Draft a /goal implementation-review prompt with xhigh reviewer subagents into the editor",
-    usage: "Usage: /goal-review-impl-xhreview <review-scope>",
-    buildPrompt: (rawArgs) => goalReviewImplPrompt(rawArgs, "xhigh"),
-  },
+  // {
+  //   name: "goal-review-impl-xhreview",
+  //   description: "Draft a /goal implementation-review prompt with xhigh reviewer subagents into the editor",
+  //   usage: "Usage: /goal-review-impl-xhreview <review-scope>",
+  //   buildPrompt: (rawArgs) => goalReviewImplPrompt(rawArgs, "xhigh"),
+  // },
 ];
 
 function reviewerEffortPrompt(reviewerEffort?: ReviewerEffort): string {
@@ -355,53 +355,53 @@ type GogogoalCommandSpec = {
 
 const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
   {
-    name: "gogogoal-parallel",
-    description: "Orchestrate a goal workflow with parallel chunks",
-    usage: "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
-    options: { parallel: true, proactive: false },
-  },
-  {
-    name: "gogogoal-parallel-xhreview",
-    description: "Orchestrate a goal workflow with parallel chunks and xhigh reviewer subagents",
-    usage: "Usage: /gogogoal-parallel-xhreview <goal-or-plan/checklist references>",
-    options: { parallel: true, proactive: false, reviewerEffort: "xhigh" },
-  },
-  {
     name: "gogogoal",
     description: "Orchestrate a goal workflow without parallel chunks",
     usage: "Usage: /gogogoal <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: false },
   },
+  // {
+  //   name: "gogogoal-xhreview",
+  //   description: "Orchestrate a goal workflow without parallel chunks and with xhigh reviewer subagents",
+  //   usage: "Usage: /gogogoal-xhreview <goal-or-plan/checklist references>",
+  //   options: { parallel: false, proactive: false, reviewerEffort: "xhigh" },
+  // },
   {
-    name: "gogogoal-xhreview",
-    description: "Orchestrate a goal workflow without parallel chunks and with xhigh reviewer subagents",
-    usage: "Usage: /gogogoal-xhreview <goal-or-plan/checklist references>",
-    options: { parallel: false, proactive: false, reviewerEffort: "xhigh" },
+    name: "gogogoal-parallel",
+    description: "Orchestrate a goal workflow with parallel chunks",
+    usage: "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
+    options: { parallel: true, proactive: false },
   },
+  // {
+  //   name: "gogogoal-parallel-xhreview",
+  //   description: "Orchestrate a goal workflow with parallel chunks and xhigh reviewer subagents",
+  //   usage: "Usage: /gogogoal-parallel-xhreview <goal-or-plan/checklist references>",
+  //   options: { parallel: true, proactive: false, reviewerEffort: "xhigh" },
+  // },
   {
     name: "gogogoal-parallel-proactive",
     description: "Orchestrate a goal workflow with parallel chunks and proactive no-clarification decisions",
     usage: "Usage: /gogogoal-parallel-proactive <goal-or-plan/checklist references>",
     options: { parallel: true, proactive: true },
   },
-  {
-    name: "gogogoal-parallel-proactive-xhreview",
-    description: "Orchestrate a goal workflow with parallel chunks, proactive no-clarification decisions, and xhigh reviewer subagents",
-    usage: "Usage: /gogogoal-parallel-proactive-xhreview <goal-or-plan/checklist references>",
-    options: { parallel: true, proactive: true, reviewerEffort: "xhigh" },
-  },
+  // {
+  //   name: "gogogoal-parallel-proactive-xhreview",
+  //   description: "Orchestrate a goal workflow with parallel chunks, proactive no-clarification decisions, and xhigh reviewer subagents",
+  //   usage: "Usage: /gogogoal-parallel-proactive-xhreview <goal-or-plan/checklist references>",
+  //   options: { parallel: true, proactive: true, reviewerEffort: "xhigh" },
+  // },
   {
     name: "gogogoal-proactive",
     description: "Orchestrate a goal workflow sequentially with proactive no-clarification decisions",
     usage: "Usage: /gogogoal-proactive <goal-or-plan/checklist references>",
     options: { parallel: false, proactive: true },
   },
-  {
-    name: "gogogoal-proactive-xhreview",
-    description: "Orchestrate a goal workflow sequentially with proactive no-clarification decisions and xhigh reviewer subagents",
-    usage: "Usage: /gogogoal-proactive-xhreview <goal-or-plan/checklist references>",
-    options: { parallel: false, proactive: true, reviewerEffort: "xhigh" },
-  },
+  // {
+  //   name: "gogogoal-proactive-xhreview",
+  //   description: "Orchestrate a goal workflow sequentially with proactive no-clarification decisions and xhigh reviewer subagents",
+  //   usage: "Usage: /gogogoal-proactive-xhreview <goal-or-plan/checklist references>",
+  //   options: { parallel: false, proactive: true, reviewerEffort: "xhigh" },
+  // },
 ];
 
 function gogogoalPrompt(goalOrReferences: string, options: GogogoalPromptOptions): string {
