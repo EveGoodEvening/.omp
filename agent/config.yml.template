@@ -16,12 +16,12 @@ secrets:
   enabled: true
 
 modelRoles:
-  default: cpa-responses/gpt-5.6-sol:medium
-  main: cpa-responses/gpt-5.6-sol:medium
-  task: cpa-responses/gpt-5.6-sol:medium
-  smol: cpa-responses/gpt-5.6-luna:max
-  commit: cpa-responses/gpt-5.6-luna:xhigh
-  tiny: cpa-responses/gpt-5.6-luna:high
+  default: cpa-responses/glm-5-2:high
+  main: cpa-responses/glm-5-2:high
+  task: cpa-responses/glm-5-2:high
+  smol: cpa-responses/glm-5-2:high
+  commit: cpa-responses/glm-5-2:high
+  tiny: cpa-responses/glm-5-2:high
   slow: cpa-responses/gpt-5.6-sol:max
   plan: cpa-responses/gpt-5.6-sol:max
   designer: cpa-responses/gpt-5.6-sol:max
