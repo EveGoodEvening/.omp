@@ -53,4 +53,4 @@ inspect_image:
 
 providers:
   webSearch: codex # auto
-  image: openai # auto
+  image: openai-codex # auto
