@@ -22,7 +22,7 @@ modelRoles:
   smol: cpa-responses/glm-5-2:high
   commit: cpa-responses/glm-5-2:high
   tiny: cpa-responses/glm-5-2:high
-  slow: cpa-responses/gpt-5.6-sol:max
+  slow: cpa-responses/gpt-5.6-sol:medium
   plan: cpa-responses/gpt-5.6-sol:max
   designer: cpa-responses/gpt-5.6-sol:max
   advisor: cpa-responses/gpt-5.6-sol:max
