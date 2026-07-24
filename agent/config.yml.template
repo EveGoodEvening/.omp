@@ -53,5 +53,19 @@ inspect_image:
   enabled: true
 
 providers:
-  webSearch: codex # auto
-  image: openai-codex # auto
+  webSearch:
+    - codex
+    - brave
+    - xai
+    - public
+    - duckduckgo
+    - bing
+    - yahoo
+    - startpage
+    - google
+    - ecosia
+    - mojeek
+  imageOrder:
+    - openai-codex
+    - openai
+    - xai
