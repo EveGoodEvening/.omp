@@ -32,7 +32,7 @@ enabledModels:
   - cpa-responses/gpt-5.5
   - cpa-responses/glm
 
-defaultThinkingLevel: medium
+defaultThinkingLevel: low
 hideThinkingBlock: true
 
 disabledProviders:
