@@ -17,7 +17,6 @@ secrets:
 
 modelRoles:
   default: cpa-responses/gpt-5.6-sol:low
-  main: cpa-responses/gpt-5.6-sol:low
   task: cpa-responses/glm:high
   smol: cpa-responses/glm:high
   commit: cpa-responses/glm:high
