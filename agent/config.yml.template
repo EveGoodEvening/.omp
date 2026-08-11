@@ -15,16 +15,9 @@ tools:
 secrets: 
   enabled: true
 
-modelRoles:
-  default: cpa-responses/gpt-5.6-sol:low
-  task: cpa-responses/glm:high
-  smol: cpa-responses/glm:high
-  commit: cpa-responses/glm:high
-  tiny: cpa-responses/glm:high
-  slow: cpa-responses/gpt-5.6-sol:medium
-  plan: cpa-responses/gpt-5.6-sol:max
-  designer: cpa-responses/gpt-5.6-sol:max
-  advisor: cpa-responses/gpt-5.6-sol:max
+defaultThinkingLevel: low
+hideThinkingBlock: true
+
 enabledModels:
   - cpa-responses/gpt-5.6-sol
   - cpa-responses/gpt-5.6-terra
@@ -32,8 +25,65 @@ enabledModels:
   - cpa-responses/gpt-5.5
   - cpa-responses/glm
 
-defaultThinkingLevel: low
-hideThinkingBlock: true
+modelRoles:
+  # 普通对话和日常编码
+  default: cpa-responses/gpt-5.6-sol:low
+  # 轻量、快速的小任务
+  smol: cpa-responses/gpt-5.6-luna:max
+  # 深度分析任务
+  slow: cpa-responses/gpt-5.6-sol:max
+  plan: cpa-responses/gpt-5.6-sol:max
+  task: cpa-responses/gpt-5.6-sol:low
+  # 写 commit 用的，不要求啥智商，越快越好
+  commit: cpa-responses/gpt-5.6-luna:max
+  # 标题、记忆整理、自动难度判断等后台小任务
+  tiny: cpa-responses/gpt-5.6-luna:max
+  # 图片理解，主要是为了解决 DeepSeek V4 / GLM-5.2 等模型目前暂时没有视觉能力
+  vision: cpa-responses/gpt-5.6-luna:max
+  designer: cpa-responses/gpt-5.6-sol:max
+  advisor: cpa-responses/gpt-5.6-sol:max
+
+retry:
+  modelFallback: true
+  usageAwareFallback: true
+  fallbackChains:
+    default:
+      - cpa-responses/glm:high
+    smol:
+      - cpa-responses/glm:high
+    slow:
+      - cpa-responses/glm:high
+    plan:
+      - cpa-responses/glm:high
+    task:
+      - cpa-responses/glm:high
+    commit:
+      - cpa-responses/glm:high
+    tiny:
+      - cpa-responses/glm:high
+    designer:
+      - cpa-responses/glm:high
+    advisor:
+      - cpa-responses/glm:high
+
+task:
+  agentModelOverrides:
+    # 快速搜索代码库，要的就是有人在后面催着跑的感觉！
+    scout: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low"
+    # 文档和外部资料检索，需要模型拥有一定程度的世界知识
+    librarian: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low"
+    # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
+    task: "cpa-responses/gpt-5.6-sol:low"
+    # 前端设计的 sub-agent, 可直接复用此前的 Role 偏好
+    designer: "cpa-responses/gpt-5.6-sol:max,cpa-responses/glm:high"
+    # 常规代码审查, 强烈推荐使用与 slow/default 不同厂商的模型
+    reviewer: "cpa-responses/glm:high,cpa-responses/gpt-5.6-sol:low"
+    # 涉及到安全类的审查任务，强烈建议使用国模 DS/GLM/K3
+    security-reviewer: "cpa-responses/glm:high"
+    # 一些简单且机械的任务 (grep/find)，配置与此前 tiny/commit 一致即可
+    sonic: "cpa-responses/gpt-5.6-luna:max"
+  # 在任务状态 widget 中显示最终实际使用的模型
+  showResolvedModelBadge: true
 
 disabledProviders:
 # - claude-plugins   # Claude Code Marketplace
@@ -48,12 +98,26 @@ disabledProviders:
   - github
   - vscode
 
-inspect_image: 
-  enabled: true
+edit:
+  mode: apply_patch
+
+# 文本模型收到直接附加的图片时，先让 vision 角色生成描述再注入 Prompt 中
+images:
+  describeForTextModels: true
+
+# 外置的图片分析工具, 适用于 DeepSeek V4, Hy3, GLM-5.2 等无视觉模型
+inspect_image:
+  # auto：仅在当前主模型不支持 vision 时暴露
+  # on： 始终暴露
+  # off：禁用
+  mode: auto
 
 providers:
-  webSearch:
+  # Exa 和 Perplexity 应该都是无需 api key 的
+  webSearchOrder:
     - codex
+    - exa
+    - perplexity
     - brave
     - xai
     - public
