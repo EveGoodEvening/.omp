@@ -26,6 +26,7 @@ enabledModels:
   - cpa-responses/gpt-5.6-luna
   - cpa-responses/gpt-5.5
   - cpa-responses/glm
+  - cpa-responses/swe
 
 modelRoles:
   # 普通对话和日常编码
@@ -53,16 +54,20 @@ retry:
       - cpa-responses/glm:high
     smol:
       - cpa-responses/glm:high
+      - cpa-responses/swe:high
     slow:
       - cpa-responses/glm:high
     plan:
       - cpa-responses/glm:high
     task:
       - cpa-responses/glm:high
+      - cpa-responses/swe:high
     commit:
       - cpa-responses/glm:high
+      - cpa-responses/swe:high
     tiny:
       - cpa-responses/glm:high
+      - cpa-responses/swe:high
     designer:
       - cpa-responses/glm:high
     advisor:
@@ -71,19 +76,19 @@ retry:
 task:
   agentModelOverrides:
     # 快速搜索代码库
-    scout: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high"
+    scout: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high,cpa-responses/swe:high"
     # 文档和外部资料检索，需要模型拥有一定程度的世界知识
-    librarian: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high"
+    librarian: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high,cpa-responses/swe:high"
     # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
-    task: "cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high"
+    task: "cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high,cpa-responses/swe:high"
     # 前端设计的 sub-agent, 可直接复用此前的 Role 偏好
     designer: "cpa-responses/gpt-5.6-sol:max,cpa-responses/glm:high"
     # 常规代码审查, 强烈推荐使用与 slow/default 不同厂商的模型
-    reviewer: "cpa-responses/glm:high,cpa-responses/gpt-5.6-sol:low"
+    reviewer: "cpa-responses/glm:high,cpa-responses/gpt-5.6-sol:low,cpa-responses/swe:high"
     # 涉及到安全类的审查任务，强烈建议使用国模 DS/GLM/K3
     security-reviewer: "cpa-responses/glm:high"
     # 一些简单且机械的任务 (grep/find)，配置与此前 tiny/commit 一致即可
-    sonic: "cpa-responses/gpt-5.6-luna:max"
+    sonic: "cpa-responses/swe:high,cpa-responses/gpt-5.6-luna:max,cpa-responses/glm:high"
   # 在任务状态 widget 中显示最终实际使用的模型
   showResolvedModelBadge: true
 
