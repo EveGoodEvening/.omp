@@ -1,8 +1,10 @@
 setupVersion: 1
 
-dev:
-  autoqa:
-    consent: denied
+dev: 
+  autoqaConsent: denied
+
+codexResets: 
+  autoRedeem: "no"
 
 symbolPreset: unicode
 theme: 
