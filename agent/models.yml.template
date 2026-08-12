@@ -21,4 +21,11 @@ providers:
         name: gpt-5.6-luna
         reasoning: true
         input: [text, image]
-
+      - id: glm
+        name: glm
+        reasoning: true
+        input: [text]
+      - id: swe
+        name: swe
+        reasoning: true
+        input: [text]
