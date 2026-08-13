@@ -50,8 +50,6 @@ retry:
   modelFallback: true
   usageAwareFallback: true
   fallbackChains:
-    default:
-      - cpa-responses/glm:high
     smol:
       - cpa-responses/glm:high
       - cpa-responses/swe:high
