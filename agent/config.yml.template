@@ -72,12 +72,15 @@ retry:
 
 task:
   agentModelOverrides:
+    code-explorer: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 快速搜索代码库
     scout: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 文档和外部资料检索，需要模型拥有一定程度的世界知识
     librarian: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
     task: "cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
+    plan: "cpa-responses/gpt-5.6-sol:max"
+    code-architect: "cpa-responses/gpt-5.6-sol:max"
     # 前端设计的 sub-agent, 可直接复用此前的 Role 偏好
     designer: "cpa-responses/gpt-5.6-sol:max,cpa-responses/glm:xhigh"
     # 常规代码审查, 强烈推荐使用与 slow/default 不同厂商的模型
