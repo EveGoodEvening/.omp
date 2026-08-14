@@ -30,7 +30,7 @@ enabledModels:
 
 modelRoles:
   # 普通对话和日常编码
-  default: cpa-responses/swe:xhigh
+  default: cpa-responses/gpt-5.6-sol:low
   # 轻量、快速的小任务
   smol: cpa-responses/gpt-5.6-luna:max
   # 深度分析任务
