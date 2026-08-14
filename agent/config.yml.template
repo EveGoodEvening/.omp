@@ -4,7 +4,7 @@ dev:
   autoqaConsent: denied
 
 codexResets: 
-  autoRedeem: "no"
+  autoRedeem: "yes"
 
 symbolPreset: unicode
 theme: 
@@ -30,7 +30,7 @@ enabledModels:
 
 modelRoles:
   # 普通对话和日常编码
-  default: cpa-responses/gpt-5.6-sol:low
+  default: cpa-responses/swe:xhigh
   # 轻量、快速的小任务
   smol: cpa-responses/gpt-5.6-luna:max
   # 深度分析任务
@@ -51,42 +51,42 @@ retry:
   usageAwareFallback: true
   fallbackChains:
     smol:
-      - cpa-responses/glm:high
-      - cpa-responses/swe:high
+      - cpa-responses/glm:xhigh
+      - cpa-responses/swe:xhigh
     slow:
-      - cpa-responses/glm:high
+      - cpa-responses/glm:xhigh
     plan:
-      - cpa-responses/glm:high
+      - cpa-responses/glm:xhigh
     task:
-      - cpa-responses/glm:high
-      - cpa-responses/swe:high
+      - cpa-responses/glm:xhigh
+      - cpa-responses/swe:xhigh
     commit:
-      - cpa-responses/glm:high
-      - cpa-responses/swe:high
+      - cpa-responses/glm:xhigh
+      - cpa-responses/swe:xhigh
     tiny:
-      - cpa-responses/glm:high
-      - cpa-responses/swe:high
+      - cpa-responses/glm:xhigh
+      - cpa-responses/swe:xhigh
     designer:
-      - cpa-responses/glm:high
+      - cpa-responses/glm:xhigh
     advisor:
-      - cpa-responses/glm:high
+      - cpa-responses/glm:xhigh
 
 task:
   agentModelOverrides:
     # 快速搜索代码库
-    scout: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high,cpa-responses/swe:high"
+    scout: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 文档和外部资料检索，需要模型拥有一定程度的世界知识
-    librarian: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high,cpa-responses/swe:high"
+    librarian: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
-    task: "cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:high,cpa-responses/swe:high"
+    task: "cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 前端设计的 sub-agent, 可直接复用此前的 Role 偏好
-    designer: "cpa-responses/gpt-5.6-sol:max,cpa-responses/glm:high"
+    designer: "cpa-responses/gpt-5.6-sol:max,cpa-responses/glm:xhigh"
     # 常规代码审查, 强烈推荐使用与 slow/default 不同厂商的模型
-    reviewer: "cpa-responses/glm:high,cpa-responses/gpt-5.6-sol:low,cpa-responses/swe:high"
+    reviewer: "cpa-responses/glm:xhigh,cpa-responses/gpt-5.6-sol:low,cpa-responses/swe:xhigh"
     # 涉及到安全类的审查任务，强烈建议使用国模 DS/GLM/K3
-    security-reviewer: "cpa-responses/glm:high"
+    security-reviewer: "cpa-responses/glm:xhigh"
     # 一些简单且机械的任务 (grep/find)，配置与此前 tiny/commit 一致即可
-    sonic: "cpa-responses/swe:high,cpa-responses/gpt-5.6-luna:max,cpa-responses/glm:high"
+    sonic: "cpa-responses/swe:xhigh,cpa-responses/gpt-5.6-luna:max,cpa-responses/glm:xhigh"
   # 在任务状态 widget 中显示最终实际使用的模型
   showResolvedModelBadge: true
 
@@ -103,8 +103,8 @@ disabledProviders:
   - github
   - vscode
 
-edit:
-  mode: apply_patch
+# edit:
+#   mode: apply_patch
 
 # 文本模型收到直接附加的图片时，先让 vision 角色生成描述再注入 Prompt 中
 images:
