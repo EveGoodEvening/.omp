@@ -14,7 +14,7 @@ theme:
 tools:
   approvalMode: yolo # always-ask, write, yolo
 
-secrets: 
+secrets:
   enabled: true
 
 defaultThinkingLevel: low
