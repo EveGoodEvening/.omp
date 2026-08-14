@@ -36,14 +36,18 @@ modelRoles:
   # 深度分析任务
   slow: cpa-responses/gpt-5.6-sol:max
   plan: cpa-responses/gpt-5.6-sol:max
-  task: cpa-responses/gpt-5.6-sol:low
+  # task: cpa-responses/gpt-5.6-sol:low
+  task: cpa-responses/glm:xhigh
   # 写 commit 用的，不要求啥智商，越快越好
-  commit: cpa-responses/gpt-5.6-luna:max
+  # commit: cpa-responses/gpt-5.6-luna:max
+  commit: cpa-responses/swe:xhigh
   # 标题、记忆整理、自动难度判断等后台小任务
-  tiny: cpa-responses/gpt-5.6-luna:max
+  # tiny: cpa-responses/gpt-5.6-luna:max
+  tiny: cpa-responses/glm:xhigh
   # 图片理解，主要是为了解决 DeepSeek V4 / GLM-5.2 等模型目前暂时没有视觉能力
   vision: cpa-responses/gpt-5.6-luna:max
-  designer: cpa-responses/gpt-5.6-sol:max
+  # designer: cpa-responses/gpt-5.6-sol:max
+  designer:  cpa-responses/glm:xhigh
   advisor: cpa-responses/gpt-5.6-sol:max
 
 retry:
@@ -51,26 +55,24 @@ retry:
   usageAwareFallback: true
   fallbackChains:
     smol:
-      - cpa-responses/glm:xhigh
+      # - cpa-responses/glm:xhigh
       - cpa-responses/swe:xhigh
-    slow:
-      - cpa-responses/glm:xhigh
-    plan:
-      - cpa-responses/glm:xhigh
-    task:
-      - cpa-responses/glm:xhigh
-    commit:
-      - cpa-responses/glm:xhigh
-      - cpa-responses/swe:xhigh
+    # task:
+    #   - cpa-responses/glm:xhigh
+    # commit:
+    #   - cpa-responses/glm:xhigh
+    #   - cpa-responses/swe:xhigh
     tiny:
-      - cpa-responses/glm:xhigh
+      # - cpa-responses/glm:xhigh
       - cpa-responses/swe:xhigh
-    designer:
-      - cpa-responses/glm:xhigh
+    # designer:
+    #   - cpa-responses/glm:xhigh
     advisor:
       - cpa-responses/glm:xhigh
 
 task:
+  # 在任务状态 widget 中显示最终实际使用的模型
+  showResolvedModelBadge: true
   agentModelOverrides:
     code-explorer: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 快速搜索代码库
@@ -78,11 +80,13 @@ task:
     # 文档和外部资料检索，需要模型拥有一定程度的世界知识
     librarian: "cpa-responses/gpt-5.6-luna:max,cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
     # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
-    task: "cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
+    # task: "cpa-responses/gpt-5.6-sol:low,cpa-responses/glm:xhigh,cpa-responses/swe:xhigh"
+    task: "cpa-responses/glm:xhigh,cpa-responses/gpt-5.6-sol:low,cpa-responses/swe:xhigh"
     plan: "cpa-responses/gpt-5.6-sol:max"
     code-architect: "cpa-responses/gpt-5.6-sol:max"
     # 前端设计的 sub-agent, 可直接复用此前的 Role 偏好
-    designer: "cpa-responses/gpt-5.6-sol:max,cpa-responses/glm:xhigh"
+    # designer: "cpa-responses/gpt-5.6-sol:max,cpa-responses/glm:xhigh"
+    designer: "cpa-responses/glm:xhigh,cpa-responses/gpt-5.6-sol:max"
     # 常规代码审查, 强烈推荐使用与 slow/default 不同厂商的模型
     reviewer: "cpa-responses/glm:xhigh,cpa-responses/gpt-5.6-sol:low,cpa-responses/swe:xhigh"
     code-reviewer: "cpa-responses/glm:xhigh,cpa-responses/gpt-5.6-sol:low,cpa-responses/swe:xhigh"
@@ -90,8 +94,6 @@ task:
     security-reviewer: "cpa-responses/glm:xhigh"
     # 一些简单且机械的任务 (grep/find)，配置与此前 tiny/commit 一致即可
     sonic: "cpa-responses/swe:xhigh,cpa-responses/gpt-5.6-luna:max,cpa-responses/glm:xhigh"
-  # 在任务状态 widget 中显示最终实际使用的模型
-  showResolvedModelBadge: true
 
 disabledProviders:
 # - claude-plugins   # Claude Code Marketplace
