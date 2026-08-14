@@ -1,13 +1,13 @@
 setupVersion: 1
 
-dev: 
+dev:
   autoqaConsent: denied
 
-codexResets: 
+codexResets:
   autoRedeem: "yes"
 
 symbolPreset: unicode
-theme: 
+theme:
   dark: dark-slate
   light: light
 
@@ -59,7 +59,6 @@ retry:
       - cpa-responses/glm:xhigh
     task:
       - cpa-responses/glm:xhigh
-      - cpa-responses/swe:xhigh
     commit:
       - cpa-responses/glm:xhigh
       - cpa-responses/swe:xhigh
