@@ -30,9 +30,9 @@ enabledModels:
 
 modelRoles:
   # 普通对话和日常编码
-  default: cpa-responses/gpt-5.6-sol:low
+  default: cpa-responses/glm:high
   # 轻量、快速的小任务
-  smol: cpa-responses/glm:high
+  smol: cpa-responses/gpt-5.6-luna:max
   # 深度分析任务
   slow: cpa-responses/gpt-5.6-sol:max
   plan: cpa-responses/gpt-5.6-sol:max
@@ -54,8 +54,10 @@ retry:
   modelFallback: true
   usageAwareFallback: true
   fallbackChains:
+    default:
+      - cpa-responses/gpt-5.6-sol:low
     smol:
-      # - cpa-responses/glm:high
+      - cpa-responses/glm:high
       - cpa-responses/swe:xhigh
     # task:
     #   - cpa-responses/glm:high
