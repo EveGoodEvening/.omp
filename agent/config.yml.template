@@ -33,17 +33,17 @@ modelRoles:
   # 普通对话和日常编码
   default: cpa-responses/grok:medium
   # 轻量、快速的小任务
-  smol: cpa-responses/gpt-5.6-luna:max
+  smol: cpa-responses/grok:low
   # 深度分析任务
   slow: cpa-responses/gpt-5.6-sol:max
   plan: cpa-responses/gpt-5.6-sol:max
   task: cpa-responses/grok:medium
   # 写 commit 用的，不要求啥智商，越快越好
-  commit: cpa-responses/gpt-5.6-luna:max
+  commit: cpa-responses/grok:low
   # 标题、记忆整理、自动难度判断等后台小任务
-  tiny: cpa-responses/gpt-5.6-luna:max
+  tiny: cpa-responses/grok:low
   # 图片理解，主要是为了解决 DeepSeek V4 / GLM-5.2 等模型目前暂时没有视觉能力
-  vision: cpa-responses/gpt-5.6-luna:max
+  vision: cpa-responses/grok:low
   designer: cpa-responses/gpt-5.6-sol:max
   advisor: cpa-responses/gpt-5.6-sol:max
 
@@ -73,11 +73,11 @@ task:
   # 在任务状态 widget 中显示最终实际使用的模型
   showResolvedModelBadge: true
   agentModelOverrides:
-    code-explorer: "cpa-responses/gpt-5.6-luna:max"
+    code-explorer: "cpa-responses/grok:low"
     # 快速搜索代码库
-    scout: "cpa-responses/gpt-5.6-luna:max"
+    scout: "cpa-responses/grok:low"
     # 文档和外部资料检索，需要模型拥有一定程度的世界知识
-    librarian: "cpa-responses/gpt-5.6-luna:max"
+    librarian: "cpa-responses/grok:low"
     # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
     task: "cpa-responses/grok:medium"
     plan: "cpa-responses/gpt-5.6-sol:max"
@@ -90,7 +90,7 @@ task:
     # 涉及到安全类的审查任务，强烈建议使用国模 DS/GLM/K3
     security-reviewer: "cpa-responses/grok:medium"
     # 一些简单且机械的任务 (grep/find)，配置与此前 tiny/commit 一致即可
-    sonic: "cpa-responses/gpt-5.6-luna:max"
+    sonic: "cpa-responses/grok:low"
 
 disabledProviders:
 # - claude-plugins   # Claude Code Marketplace
