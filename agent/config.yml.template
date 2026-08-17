@@ -31,19 +31,19 @@ enabledModels:
 
 modelRoles:
   # 普通对话和日常编码
-  default: cpa-responses/grok:medium
+  default: cpa-responses/grok:high
   # 轻量、快速的小任务
-  smol: cpa-responses/grok:low
+  smol: cpa-responses/grok:medium
   # 深度分析任务
   slow: cpa-responses/gpt-5.6-sol:max
   plan: cpa-responses/gpt-5.6-sol:max
-  task: cpa-responses/grok:medium
+  task: cpa-responses/grok:high
   # 写 commit 用的，不要求啥智商，越快越好
-  commit: cpa-responses/grok:low
+  commit: cpa-responses/grok:medium
   # 标题、记忆整理、自动难度判断等后台小任务
-  tiny: cpa-responses/grok:low
+  tiny: cpa-responses/grok:medium
   # 图片理解，主要是为了解决 DeepSeek V4 / GLM-5.2 等模型目前暂时没有视觉能力
-  vision: cpa-responses/grok:low
+  vision: cpa-responses/grok:medium
   designer: cpa-responses/gpt-5.6-sol:max
   advisor: cpa-responses/gpt-5.6-sol:max
 
@@ -73,24 +73,24 @@ task:
   # 在任务状态 widget 中显示最终实际使用的模型
   showResolvedModelBadge: true
   agentModelOverrides:
-    code-explorer: "cpa-responses/grok:low"
+    code-explorer: "cpa-responses/grok:medium"
     # 快速搜索代码库
-    scout: "cpa-responses/grok:low"
+    scout: "cpa-responses/grok:medium"
     # 文档和外部资料检索，需要模型拥有一定程度的世界知识
-    librarian: "cpa-responses/grok:low"
+    librarian: "cpa-responses/grok:medium"
     # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
-    task: "cpa-responses/grok:medium"
+    task: "cpa-responses/grok:high"
     plan: "cpa-responses/gpt-5.6-sol:max"
     code-architect: "cpa-responses/gpt-5.6-sol:max"
     # 前端设计的 sub-agent, 可直接复用此前的 Role 偏好
     designer: "cpa-responses/gpt-5.6-sol:max"
     # 常规代码审查, 强烈推荐使用与 slow/default 不同厂商的模型
-    reviewer: "cpa-responses/grok:medium"
-    code-reviewer: "cpa-responses/grok:medium"
+    reviewer: "cpa-responses/grok:high"
+    code-reviewer: "cpa-responses/grok:high"
     # 涉及到安全类的审查任务，强烈建议使用国模 DS/GLM/K3
-    security-reviewer: "cpa-responses/grok:medium"
+    security-reviewer: "cpa-responses/grok:high"
     # 一些简单且机械的任务 (grep/find)，配置与此前 tiny/commit 一致即可
-    sonic: "cpa-responses/grok:low"
+    sonic: "cpa-responses/grok:medium"
 
 disabledProviders:
 # - claude-plugins   # Claude Code Marketplace
