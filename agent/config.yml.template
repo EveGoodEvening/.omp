@@ -37,7 +37,7 @@ modelRoles:
   # 深度分析任务
   slow: cpa-responses/gpt-5.6-sol:max
   plan: cpa-responses/gpt-5.6-sol:max
-  task: cpa-responses/grok:high
+  task: cpa-responses/gpt-5.6-sol:low
   # 写 commit 用的，不要求啥智商，越快越好
   commit: cpa-responses/gpt-5.6-luna:max
   # 标题、记忆整理、自动难度判断等后台小任务
@@ -79,16 +79,16 @@ task:
     # 文档和外部资料检索，需要模型拥有一定程度的世界知识
     librarian: "cpa-responses/gpt-5.6-luna:max"
     # 通用的 sub-agent, 需要有一定的 Agentic 执行能力
-    task: "cpa-responses/grok:high"
+    task: "cpa-responses/gpt-5.6-sol:low"
     plan: "cpa-responses/gpt-5.6-sol:max"
     code-architect: "cpa-responses/gpt-5.6-sol:max"
     # 前端设计的 sub-agent, 可直接复用此前的 Role 偏好
     designer: "cpa-responses/gpt-5.6-sol:max"
     # 常规代码审查, 强烈推荐使用与 slow/default 不同厂商的模型
-    reviewer: "cpa-responses/grok:high"
-    code-reviewer: "cpa-responses/grok:high"
+    reviewer: "cpa-responses/gpt-5.6-sol:low"
+    code-reviewer: "cpa-responses/gpt-5.6-sol:low"
     # 涉及到安全类的审查任务，强烈建议使用国模 DS/GLM/K3
-    security-reviewer: "cpa-responses/grok:high"
+    security-reviewer: "cpa-responses/gpt-5.6-sol:low"
     # 一些简单且机械的任务 (grep/find)，配置与此前 tiny/commit 一致即可
     sonic: "cpa-responses/gpt-5.6-luna:max"
 
