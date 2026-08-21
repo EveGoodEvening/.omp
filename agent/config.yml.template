@@ -1,4 +1,4 @@
-setupVersion: 1
+setupVersion: 2
 
 dev:
   autoqaConsent: denied
@@ -26,8 +26,6 @@ enabledModels:
   - cpa-responses/gpt-5.6-luna
   - cpa-responses/gpt-5.5
   - cpa-responses/grok
-  # - cpa-responses/glm
-  # - cpa-responses/swe
 
 modelRoles:
   # 普通对话和日常编码
@@ -139,3 +137,6 @@ providers:
     - openai-codex
     - openai
     - xai
+
+composer: 
+  shape: box
