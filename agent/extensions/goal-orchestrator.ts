@@ -366,24 +366,24 @@ const GOGOGOAL_COMMANDS: GogogoalCommandSpec[] = [
   //   usage: "Usage: /gogogoal-xhreview <goal-or-plan/checklist references>",
   //   options: { parallel: false, proactive: false, reviewerEffort: "xhigh" },
   // },
-  {
-    name: "gogogoal-parallel",
-    description: "Orchestrate a goal workflow with parallel chunks",
-    usage: "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
-    options: { parallel: true, proactive: false },
-  },
+  // {
+  //   name: "gogogoal-parallel",
+  //   description: "Orchestrate a goal workflow with parallel chunks",
+  //   usage: "Usage: /gogogoal-parallel <goal-or-plan/checklist references>",
+  //   options: { parallel: true, proactive: false },
+  // },
   // {
   //   name: "gogogoal-parallel-xhreview",
   //   description: "Orchestrate a goal workflow with parallel chunks and xhigh reviewer subagents",
   //   usage: "Usage: /gogogoal-parallel-xhreview <goal-or-plan/checklist references>",
   //   options: { parallel: true, proactive: false, reviewerEffort: "xhigh" },
   // },
-  {
-    name: "gogogoal-parallel-proactive",
-    description: "Orchestrate a goal workflow with parallel chunks and proactive no-clarification decisions",
-    usage: "Usage: /gogogoal-parallel-proactive <goal-or-plan/checklist references>",
-    options: { parallel: true, proactive: true },
-  },
+  // {
+  //   name: "gogogoal-parallel-proactive",
+  //   description: "Orchestrate a goal workflow with parallel chunks and proactive no-clarification decisions",
+  //   usage: "Usage: /gogogoal-parallel-proactive <goal-or-plan/checklist references>",
+  //   options: { parallel: true, proactive: true },
+  // },
   // {
   //   name: "gogogoal-parallel-proactive-xhreview",
   //   description: "Orchestrate a goal workflow with parallel chunks, proactive no-clarification decisions, and xhigh reviewer subagents",
