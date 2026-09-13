@@ -29,11 +29,3 @@ providers:
         name: grok
         reasoning: true
         input: [text, image]
-      # - id: swe
-      #   name: swe
-      #   reasoning: true
-      #   input: [text]
-      # - id: glm
-      #   name: glm
-      #   reasoning: true
-      #   input: [text]
