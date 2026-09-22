@@ -24,8 +24,11 @@ hideThinkingBlock: true
 enabledModels:
   - cpa-responses/gpt-6-astra
   - cpa-responses/gpt-6-sol
-  - cpa-responses/gpt-6-terra
   - cpa-responses/gpt-6-luna
+  - cpa-responses/gpt-5.6-sol
+  - cpa-responses/gpt-5.6-terra
+  - cpa-responses/gpt-5.6-luna
+  - cpa-responses/gpt-5.5
   - cpa-responses/grok
 
 modelRoles:
