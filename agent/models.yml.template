@@ -5,20 +5,16 @@ providers:
     api: openai-responses # openai-completions, openai-responses, openai-codex-responses, azure-openai-responses, anthropic-messages, google-generative-ai, google-vertex
     auth: apiKey
     models:
-      - id: gpt-5.5
-        name: gpt-5.5
+      - id: gpt-6-luna
+        name: gpt-6-luna
         reasoning: true
         input: [text, image]
-      - id: gpt-5.6-luna
-        name: gpt-5.6-luna
+      - id: gpt-6-terra
+        name: gpt-6-terra
         reasoning: true
         input: [text, image]
-      - id: gpt-5.6-terra
-        name: gpt-5.6-terra
-        reasoning: true
-        input: [text, image]
-      - id: gpt-5.6-sol
-        name: gpt-5.6-sol
+      - id: gpt-6-sol
+        name: gpt-6-sol
         reasoning: true
         input: [text, image]
       - id: gpt-6-astra
