@@ -29,7 +29,7 @@ enabledModels:
   - cpa-responses/gpt-5.6-terra
   - cpa-responses/gpt-5.6-luna
   - cpa-responses/gpt-5.5
-  - cpa-responses/grok
+  - cpa-responses/my-grok
 
 modelRoles:
   # 普通对话和日常编码

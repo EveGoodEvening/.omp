@@ -33,7 +33,7 @@ providers:
         name: gpt-6-luna
         reasoning: true
         input: [text, image]
-      - id: grok
-        name: grok
+      - id: my-grok
+        name: my-grok
         reasoning: true
         input: [text, image]
