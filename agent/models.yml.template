@@ -10,8 +10,8 @@ providers:
         name: gpt-6-astra
         reasoning: true
         input: [text, image]
-      - id: gpt-6-sol
-        name: gpt-6-sol
+      - id: gpt-6.1-sol
+        name: gpt-6.1-sol
         reasoning: true
         input: [text, image]
       - id: gpt-6-luna
