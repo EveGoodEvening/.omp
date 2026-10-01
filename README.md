@@ -13,8 +13,6 @@ I am interested in the following plugin marketplaces and the following plugins.
 ```bash
 /marketplace add anthropics/claude-plugins-official
 /marketplace install ... # see `enabledPlugins` in https://github.com/EveGoodEvening/.claude/blob/master/settings.json
-/marketplace add nexu-io/open-design
-/marketplace install open-design@open-design
 ```
 
 ## Machine-wide heavy-command gate
