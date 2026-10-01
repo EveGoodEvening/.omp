@@ -19,6 +19,7 @@ agent/sessions/
 agent/terminal-sessions/
 
 # Runtime outputs and downloaded/cached assets.
+agent/cache/
 logs/
 marketplaces.json
 plugins/cache/
