@@ -1,0 +1,14 @@
+# Project Instructions
+
+## Lessons
+
+- This repository is the OMP configuration root. `agent/AGENTS.md` is the global agent policy, not this repository's lesson log. Keep repository lessons here.
+- Verified against OMP 18.4.4 (upstream tag `v18.4.4`, commit `8ac1309bd8adaddc891eeb389c545345073875be`). Native extensions in `agent/extensions/*.ts` are auto-discovered by the default profile and rebound for subagents; other profiles/disabled extension discovery need explicit loading.
+- OMP `tool_call` handlers can block or replace execution input; this also covers `tool.bash` reached through Eval. A recognized finite gated Bash command needs both `async: true` and `timeout: 0`: async alone preserves the command deadline.
+- In OMP 18.4.4, `tool_call` input replacements are aggregated for execution; later `tool_call` handlers still see the original event. Observe effective arguments in `tool_result`, not in a second pre-call handler. `before_agent_start` prompt overrides, by contrast, chain between handlers.
+- Eval `browser.open` is an internal host bridge and emits no separate `tool_call`. OMP's shared-browser readiness deadline is 30 seconds; a gate executable wrapper that may wait minutes is not a reliable native-browser integration. Use gated external automation or explicit CDP/relay attachment, and describe static launch detection as best-effort rather than a sandbox.
+- Claude and OMP must use the same `/tmp/heavy-gate/slot-N` and `launch` flock files. Separate per-tool or per-project directories multiply the effective resource budget.
+- `systemd-run --user --scope` returns when its main command exits even if descendants remain. Keep the slot until the scope is inactive; child processes may close inherited flock descriptors. Fail closed when user systemd or resource isolation is unavailable.
+- The host's systemd 255 rejects `MemoryOOMGroup=yes`. `MemoryMax` and `MemorySwapMax=0` were verified in the real cgroup; a 96 MiB scoped OOM killed the capped child without terminating its supervisor.
+- For model-free verification of extensions in the compiled OMP binary, an explicit throwaway extension can use `pi.pi.createAgentSession`, `SessionManager.inMemory`, and `session.getToolByName(...).execute(...)`. This exercises the real discovery/wrapper/Eval paths without a model request; dispose the test session and remove the throwaway harness afterward.
+- A second top-level SDK session in an already-running OMP process deliberately has no async-job manager. Async smoke runs need a uniquely identified child session (`parentTaskPrefix`/`agentId`) with scoped ownership, rather than pretending that the secondary session is the main one.

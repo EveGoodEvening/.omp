@@ -1,0 +1,314 @@
+#!/usr/bin/env python3
+"""OMP tool_call checker, adapted from Claude commit 4464b3e.
+
+stdin: {toolName: "bash"|"eval", input: {...}, cwd: session_cwd}
+stdout: {block: bool, reason?: str, gated?: bool}
+Static detection is deliberately conservative, not a shell/JS/Python sandbox.
+"""
+import json
+import os
+import re
+import shlex
+import sys
+
+GATE = "~/.omp/bin/heavy-gate"
+GATES = {os.path.realpath(os.path.expanduser(p)) for p in (GATE, "~/.claude/bin/heavy-gate")}
+INDICATOR = re.compile(
+    r"""['\"](?:playwright|playwright-core|playwright-chromium|@playwright/test|puppeteer|puppeteer-core)['\"]"""
+    r"|\b(?:chromium|firefox|webkit|puppeteer)\.(?:launch|launchPersistentContext|launch_persistent_context|launchServer)\b"
+    r"|\bfrom\s+playwright\b|\bimport\s+playwright\b|\bsync_playwright\b|\basync_playwright\b|\bpyppeteer\b|\bfrom\s+selenium\b|\bimport\s+selenium\b")
+LOCAL_IMPORT = re.compile(r"""(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)['\"](\.{1,2}/[^'\"]+)['\"]""")
+PW_LAUNCHING = {"test", "screenshot", "pdf", "open", "codegen", "cr", "ff", "wk", "show-trace"}
+PW_NAMES = {"playwright", "playwright-core", "@playwright/test"}
+BROWSERS = {"chromium", "chromium-browser", "google-chrome", "google-chrome-stable", "chrome", "headless_shell",
+            "chrome-headless-shell", "firefox", "electron"}
+WRAPPERS = {"sudo", "nohup", "exec", "time", "nice", "ionice", "stdbuf", "setsid", "unbuffer", "command", "builtin"}
+SHELLS = {"bash", "sh", "zsh", "dash"}
+JS_RUNTIMES = {"node", "nodejs", "deno", "tsx", "ts-node", "bun"}
+OPERATORS = {";", "&&", "||", "|", "&", "(", ")", "|&", ";;", "\n"}
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1[^\n]*\n(.*?)\n[ \t]*\2[ \t]*(?=\n|$)", re.S)
+JS_EXT = ("", ".mjs", ".js", ".ts", ".mts", ".cjs", ".cts", "/index.mjs", "/index.js", "/index.ts")
+BROWSER_OPEN = re.compile(r"\bbrowser\s*\.\s*open\s*\(")
+# Require an explicit attach-only mode at EACH open, rather than accepting a
+# stray cdp_url string elsewhere in the cell. Dynamic aliases remain out of scope.
+ATTACH_JS = re.compile(r"\s*\{\s*app\s*:\s*\{\s*(?:cdp_url\s*:\s*['\"][^'\"]+['\"]|relay\s*:\s*true)\s*[,}]")
+ATTACH_PY = re.compile(r"\s*app\s*=\s*\{\s*['\"](?:cdp_url['\"]\s*:\s*['\"][^'\"]+['\"]|relay['\"]\s*:\s*True)\s*[,}]")
+
+
+def read_text(path, limit=2_000_000):
+    try:
+        if os.path.isfile(path) and os.path.getsize(path) <= limit:
+            with open(path, encoding="utf-8", errors="replace") as f:
+                return f.read()
+    except OSError:
+        pass
+    return None
+
+
+def file_launches(path, depth=0, seen=None):
+    seen = seen if seen is not None else set()
+    real = os.path.realpath(path)
+    if real in seen or len(seen) >= 40:
+        return None
+    seen.add(real)
+    text = read_text(real)
+    if text is None:
+        return None
+    if INDICATOR.search(text):
+        return path
+    if depth < 2 and not real.endswith(".py"):
+        for rel in LOCAL_IMPORT.findall(text):
+            for ext in JS_EXT:
+                cand = os.path.normpath(os.path.join(os.path.dirname(real), rel + ext))
+                if os.path.isfile(cand):
+                    hit = file_launches(cand, depth + 1, seen)
+                    if hit:
+                        return f"{path} -> {hit}"
+                    break
+    return None
+
+
+def progname(word):
+    word = re.sub(r"(?<=.)@[^/]*$", "", word)
+    return word if word.startswith("@") else os.path.basename(word)
+
+
+def split_commands(cmd):
+    lex = shlex.shlex(cmd, posix=True, punctuation_chars=";&|()")
+    lex.whitespace_split = True
+    lex.commenters = ""
+    cur = []
+    for tok in lex:
+        if tok in OPERATORS or set(tok) <= set(";&|()"):
+            if cur:
+                yield cur
+            cur = []
+        else:
+            cur.append(tok)
+    if cur:
+        yield cur
+
+
+def strip_prefix(words):
+    i = 0
+    timed = False
+    while i < len(words):
+        w = words[i]
+        b = os.path.basename(w)
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", w) or w == "$":
+            i += 1
+        elif b in WRAPPERS or b == "xvfb-run":
+            i += 1
+            while i < len(words) and words[i].startswith("-"):
+                i += 2 if words[i] in ("-n", "-u", "-g", "-c", "-s", "-a", "-o", "-e", "-i") and b != "xvfb-run" else 1
+        elif b == "env":
+            i += 1
+            while i < len(words) and (words[i].startswith("-") or "=" in words[i]):
+                i += 2 if words[i] in ("-u", "--unset", "-C", "--chdir") else 1
+        elif b == "timeout":
+            timed = True
+            i += 1
+            while i < len(words) and words[i].startswith("-"):
+                i += 2 if words[i] in ("-s", "-k", "--signal", "--kill-after") else 1
+            i += 1
+        else:
+            break
+    return words[i:], timed
+
+
+class Checker:
+    def __init__(self):
+        self.heredocs = []
+        self.gated = False
+
+    def path(self, p, cwd):
+        return os.path.normpath(os.path.join(cwd, os.path.expandvars(os.path.expanduser(p))))
+
+    def command_string(self, cmd, cwd, depth=0, timed=False):
+        if depth > 4:
+            return "command nesting exceeds the launch check limit; gate the outer command"
+        self.heredocs.extend(m.group(3) for m in HEREDOC.finditer(cmd))
+        cmd = HEREDOC.sub(lambda m: m.group(0).split("\n", 1)[0] + "\n", cmd)
+        cmd = cmd.replace("\\\n", " ").replace("\n", " ; ")
+        for words in split_commands(cmd):
+            words, has_timeout = strip_prefix(words)
+            if not words:
+                continue
+            prog = progname(words[0])
+            if prog == "cd":
+                target = words[1] if len(words) > 1 else "~"
+                if target != "-":
+                    cwd = self.path(target, cwd)
+                continue
+            if prog == "heavy-gate":
+                if os.path.realpath(self.path(words[0], cwd)) not in GATES:
+                    return "use the installed ~/.omp/bin/heavy-gate, not an unverified gate executable"
+                if words[1:] == ["--status"]:
+                    continue
+                if timed or has_timeout:
+                    return "timeout must not wrap heavy-gate; it may wait minutes for a slot"
+                self.gated = True
+                continue
+            hit = self.simple(prog, words, cwd, depth, timed or has_timeout)
+            if hit:
+                return hit
+        return None
+
+    def simple(self, prog, words, cwd, depth, timed=False):
+        args = words[1:]
+        if prog in PW_NAMES:
+            sub = next((a for a in args if not a.startswith("-")), None)
+            if sub in PW_LAUNCHING and not {"--list", "--help", "-h"} & set(args):
+                return f"playwright {sub} starts browsers"
+            return None
+        if prog in BROWSERS:
+            if not args or not set(args) <= {"--version", "--help", "-h"}:
+                return f"{prog} starts a browser/heavy application"
+            return None
+        if prog in SHELLS:
+            for i, a in enumerate(args[:-1]):
+                if a == "-c" or (a.startswith("-") and not a.startswith("--") and a.endswith("c")):
+                    return self.command_string(args[i + 1], cwd, depth + 1, timed)
+            script = next((a for a in args if not a.startswith("-")), None)
+            text = read_text(self.path(script, cwd)) if script else None
+            return self.command_string(text, cwd, depth + 1, timed) if text is not None else None
+        if prog in ("npx", "bunx", "pnpx"):
+            i = 0
+            while i < len(args) and args[i].startswith("-"):
+                i += 2 if args[i] in ("-p", "--package") else 1
+            if i < len(args):
+                return self.simple(progname(args[i]), args[i:], cwd, depth, timed)
+            return None
+        if prog in ("npm", "pnpm", "yarn") or (prog == "bun" and args and not args[0].startswith("-") and
+                not re.search(r"\.[cm]?[jt]s$", args[0])):
+            return self.package_runner(prog, args, cwd, depth, timed)
+        if prog in JS_RUNTIMES or re.fullmatch(r"python[0-9.]*|pypy3?", prog):
+            return self.interpreter(prog, args, cwd)
+        # Executable project shell/JS/Python launchers are not always named node/bash.
+        text = read_text(self.path(words[0], cwd)) if "/" in words[0] else None
+        if text and text.startswith("#!"):
+            if INDICATOR.search(text):
+                return f"{words[0]} imports browser automation"
+            if re.search(r"\b(?:bash|sh|zsh|dash)\b", text.split("\n", 1)[0]):
+                return self.command_string(text, cwd, depth + 1, timed)
+        return None
+
+    def package_runner(self, prog, args, cwd, depth, timed):
+        pkg_dir, rest, i = cwd, [], 0
+        while i < len(args):
+            a = args[i]
+            if a in ("--prefix", "-C", "--dir", "--cwd") and i + 1 < len(args):
+                pkg_dir = self.path(args[i + 1], cwd)
+                i += 2
+                continue
+            m = re.match(r"--(?:prefix|dir|cwd)=(.+)", a)
+            if m:
+                pkg_dir = self.path(m.group(1), cwd)
+            elif not a.startswith("-") or rest:
+                rest.append(a)
+            i += 1
+        if not rest:
+            return None
+        verb = rest[0]
+        if verb in ("exec", "x", "dlx") and len(rest) > 1:
+            tail = [a for a in rest[1:] if a != "--"]
+            return self.simple(progname(tail[0]), tail, pkg_dir, depth, timed) if tail else None
+        name = rest[1] if verb in ("run", "run-script", "rum", "urn") and len(rest) > 1 else verb
+        if verb in ("t", "tst"):
+            name = "test"
+        pkg = read_text(os.path.join(pkg_dir, "package.json"))
+        scripts = json.loads(pkg).get("scripts", {}) if pkg else {}
+        # npm's pre/post lifecycle scripts can launch browsers too.
+        names = ["pre" + name, name, "post" + name] if prog == "npm" else [name]
+        for key in names:
+            if key in scripts:
+                hit = self.command_string(scripts[key], pkg_dir, depth + 1, timed)
+                if hit:
+                    return f"script {key} -> {hit}"
+        if name in scripts:
+            return None
+        if re.search(r"\.[cm]?[jt]s$", name):
+            return self.interpreter("node", [name], pkg_dir)
+        if prog in ("pnpm", "yarn", "bun") and verb not in ("run", "install", "add", "i", "test"):
+            if progname(rest[0]) == prog:
+                return None
+            return self.simple(progname(rest[0]), rest, pkg_dir, depth, timed)
+        return None
+
+    def interpreter(self, prog, args, cwd):
+        is_py = prog.startswith("py")
+        i = 0
+        while i < len(args):
+            a = args[i]
+            if (is_py and a == "-c") or (not is_py and a in ("-e", "--eval", "-p", "--print")):
+                code = args[i + 1] if i + 1 < len(args) else ""
+                return f"inline {prog} browser code" if INDICATOR.search(code) else None
+            if is_py and a == "-m" and i + 1 < len(args):
+                if args[i + 1] == "playwright":
+                    sub = next((x for x in args[i + 2:] if not x.startswith("-")), None)
+                    if sub in PW_LAUNCHING and not {"--list", "--help", "-h"} & set(args):
+                        return f"playwright {sub} starts browsers"
+                return None
+            if a in ("-r", "--require", "--import", "--loader", "-W", "-X") and i + 1 < len(args):
+                if a in ("-r", "--require", "--import", "--loader"):
+                    hit = file_launches(self.path(args[i + 1], cwd))
+                    if hit:
+                        return f"{prog} preload uses a browser ({hit})"
+                i += 2
+                continue
+            if a == "-" or not a.startswith("-"):
+                break
+            i += 1
+        script = args[i] if i < len(args) else "-"
+        if prog == "deno" and script == "eval":
+            return "deno eval browser code" if any(INDICATOR.search(x) for x in args[i + 1:]) else None
+        if prog == "deno" and script in ("run", "test"):
+            script = next((x for x in args[i + 1:] if not x.startswith("-")), "-")
+        if script != "-" and not script.startswith(("-", "<")):
+            hit = file_launches(self.path(script, cwd))
+            if hit:
+                return f"{script} uses a browser ({hit})"
+        if any(INDICATOR.search(h) for h in self.heredocs):
+            return f"{prog} stdin/heredoc uses a browser"
+        return None
+
+
+def check(data):
+    name = data.get("toolName")
+    inputs = data.get("input") or {}
+    cwd = data.get("cwd") or os.getcwd()
+    checker = Checker()
+    why = None
+    if name == "bash":
+        cwd = checker.path(inputs.get("cwd") or cwd, cwd)
+        why = checker.command_string(inputs.get("command") or "", cwd)
+    elif name == "eval":
+        code = inputs.get("code") or ""
+        if INDICATOR.search(code):
+            why = "Eval imports/launches browser automation; put that code in an external script and gate its process"
+        else:
+            attach = ATTACH_PY if inputs.get("language") == "py" else ATTACH_JS
+            for call in BROWSER_OPEN.finditer(code):
+                if not attach.match(code[call.end():]):
+                    why = "browser.open must explicitly attach: use app.cdp_url for a gated browser or app.relay for an existing user browser, with app first"
+                    break
+    if why:
+        return {"block": True, "reason": (
+            f"heavy-gate: {why}. Run memory-heavy work as `{GATE} -n 1 -- <command>` "
+            "with bash async:true, timeout:0; never wrap the gate in timeout or disguise the launch. "
+            "Use --workers=1 and close browsers in finally. Native Eval browser attachment is not proof of gating: "
+            "the local CDP browser must already be running under the gate. "
+            f"Inspect `{GATE} --status`; see ~/.omp/agent/AGENTS.md.")}
+    return {"block": False, "gated": checker.gated}
+
+
+def main():
+    try:
+        result = check(json.load(sys.stdin))
+    except Exception as error:
+        result = {"block": True, "reason": f"heavy-gate launch check failed: {error}; refusing unchecked execution"}
+    print(json.dumps(result))
+
+
+if __name__ == "__main__":
+    main()

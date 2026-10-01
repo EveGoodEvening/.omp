@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+# Adapted from ~/.claude/bin/heavy-gate (4464b3e). Same flock namespace/protocol.
+# heavy-gate [-n SLOTS] [-m MEMORY_MAX] [-l LABEL] -- command [args...]
+# heavy-gate --status
+# Wait without a deadline; never run uncapped if systemd is unavailable.
+set -u
+
+SLOTS=${HEAVY_GATE_SLOTS:-2}
+MIN_FREE_MB=${HEAVY_GATE_MIN_FREE_MB:-4500}
+MEM_MAX=${HEAVY_GATE_MEM_MAX:-6G}
+SETTLE=${HEAVY_GATE_SETTLE:-20}
+DIR=${HEAVY_GATE_DIR:-/tmp/heavy-gate}
+
+fail() { echo "heavy-gate: $*" >&2; exit 64; }
+[[ $SLOTS =~ ^[1-2]$ ]] || fail "HEAVY_GATE_SLOTS must be 1 or 2"
+[[ $MIN_FREE_MB =~ ^[0-9]+$ ]] || fail "invalid HEAVY_GATE_MIN_FREE_MB"
+[[ $SETTLE =~ ^[0-9]+$ ]] || fail "invalid HEAVY_GATE_SETTLE"
+mkdir -p "$DIR" || exit 1
+
+mem_free_mb() { awk '/^MemAvailable:/ { print int($2 / 1024) }' /proc/meminfo; }
+
+if [[ ${1:-} == --status ]]; then
+  echo "MemAvailable $(mem_free_mb) MiB (need $MIN_FREE_MB), $SLOTS slots in $DIR"
+  for ((i = 0; i < SLOTS; i++)); do
+    f="$DIR/slot-$i"
+    if [[ -e $f ]] && ! flock -n "$f" true 2>/dev/null; then
+      echo "slot-$i busy: $(cat "$f")"
+    else
+      echo "slot-$i free"
+    fi
+  done
+  exit 0
+fi
+
+need=1 label=""
+while getopts "n:m:l:" opt; do
+  case $opt in
+    n) need=$OPTARG ;;
+    m) MEM_MAX=$OPTARG ;;
+    l) label=$OPTARG ;;
+    *) fail "usage: heavy-gate [-n SLOTS] [-m MEMORY_MAX] [-l LABEL] -- command [args...]" ;;
+  esac
+done
+shift $((OPTIND - 1))
+[[ ${1:-} == -- ]] && shift
+(($# > 0)) || fail "no command"
+[[ $need =~ ^[1-2]$ ]] && ((need <= SLOTS)) || fail "-n must be 1..$SLOTS"
+[[ $MEM_MAX =~ ^[1-9][0-9]*([KMGTPE]([i]?[B])?)?$ ]] || fail "-m must be a finite positive memory limit (e.g. 6G)"
+label=${label:-"$(basename "$PWD"): $*"}
+label=${label:0:160}
+
+# Check isolation before waiting. Never silently fall back to an unbounded process.
+systemctl --user show-environment >/dev/null 2>&1 || {
+  echo "heavy-gate: user systemd manager unavailable; refusing uncapped execution" >&2
+  exit 69
+}
+
+held=() settle="" unit=""
+release() { for fd in "${held[@]}"; do exec {fd}>&-; done; held=(); }
+cleanup() {
+  local rc=$?
+  trap - EXIT HUP INT TERM
+  # This unit belongs to this invocation, never to another session's holder.
+  if [[ -n $unit ]]; then systemctl --user stop "$unit" >/dev/null 2>&1 || :; fi
+  if [[ -n $settle ]]; then kill "$settle" 2>/dev/null || :; wait "$settle" 2>/dev/null || :; fi
+  for fd in "${held[@]}"; do : > "/proc/$$/fd/$fd"; done
+  release
+  exit "$rc"
+}
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# Acquire all requested slots or none: two -n 2 waiters cannot deadlock.
+try_slots() {
+  local i fd
+  for ((i = 0; i < SLOTS && ${#held[@]} < need; i++)); do
+    exec {fd}<>"$DIR/slot-$i" || exit 1
+    if flock -n "$fd"; then held+=("$fd"); else exec {fd}>&-; fi
+  done
+  ((${#held[@]} == need)) && return 0
+  release
+  return 1
+}
+
+t0=$SECONDS last=-30
+while :; do
+  if try_slots; then
+    exec {launch}<>"$DIR/launch" || exit 1
+    flock "$launch" || exit 1
+    free=$(mem_free_mb)
+    [[ $free =~ ^[0-9]+$ ]] || fail "cannot read MemAvailable"
+    ((free >= MIN_FREE_MB)) && break
+    exec {launch}>&-
+    release
+    reason="MemAvailable $free MiB < $MIN_FREE_MB MiB"
+  else
+    reason="all $SLOTS slots busy"
+  fi
+  if ((SECONDS - last >= 30)); then
+    last=$SECONDS
+    echo "[heavy-gate] waiting $((SECONDS - t0)) s: $reason ($label)" >&2
+  fi
+  sleep $((2 + RANDOM % 3))
+done
+
+unit="heavy-gate-$UID-$$-$RANDOM.scope"
+for fd in "${held[@]}"; do
+  echo "pid $$ unit $unit since $(date '+%F %T') $label" > "/proc/$$/fd/$fd"
+done
+# Serialize memory observations while the preceding launch settles.
+( for fd in "${held[@]}"; do exec {fd}>&-; done; exec sleep "$SETTLE" ) &
+settle=$!
+exec {launch}>&-
+
+echo 500 > /proc/self/oom_score_adj 2>/dev/null || :
+systemd-run --user --scope --quiet --collect --unit="$unit" \
+  -p MemoryMax="$MEM_MAX" -p MemorySwapMax=0 -- "$@" <&0 &
+runner=$!
+wait "$runner"
+rc=$?
+# systemd-run returns when its main command exits, even with live descendants.
+# Retain slots until the scope is empty, including children that close inherited fds.
+while [[ $(systemctl --user show "$unit" -p ActiveState --value 2>/dev/null) =~ ^(active|activating|deactivating)$ ]]; do
+  sleep 1
+done
+exit "$rc"
