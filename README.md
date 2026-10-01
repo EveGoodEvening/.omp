@@ -65,6 +65,11 @@ checker cannot run. A denial means rerun through the gate, not obscure the launc
 The full orchestration policy lives in `agent/AGENTS.md` and is also injected into
 agent prompts by the extension.
 
+Bun options are resolved before selecting package-script or interpreter mode.
+Commands such as `bun --cwd project run smoke` inspect the selected package;
+leading options on inline code, cwd-relative preloads, and `bun -` stdin scripts
+also retain browser-launch checks. Ordinary non-browser Bun commands remain usable.
+
 OMP 18.4.4's [`browser.open` is an Eval host bridge](https://github.com/can1357/oh-my-pi/blob/v18.4.4/docs/hooks.md),
 not a separately intercepted tool call. Its
 [`shared browser startup has a 30-second readiness deadline`](https://github.com/can1357/oh-my-pi/blob/v18.4.4/packages/coding-agent/src/tools/browser/shared-daemon.ts),
@@ -124,3 +129,6 @@ A Chromium process launched through the production gate was confirmed inside its
 6 GiB scope, attached through OMP Eval/CDP, clicked a page button, and produced a
 verified screenshot. Its launcher then stopped the browser and released the
 entire scope. No model request was needed for these runtime checks.
+The Bun dispatch smoke additionally exercised the real OMP Bash wrapper and nested
+Eval `tool.bash`: browser-bearing package scripts, prefixed inline code, preloads,
+and stdin were denied, while ordinary Bun scripts and inline code executed normally.

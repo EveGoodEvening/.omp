@@ -179,8 +179,7 @@ class Checker:
             if i < len(args):
                 return self.simple(progname(args[i]), args[i:], cwd, depth, timed)
             return None
-        if prog in ("npm", "pnpm", "yarn") or (prog == "bun" and args and not args[0].startswith("-") and
-                not re.search(r"\.[cm]?[jt]s$", args[0])):
+        if prog in ("npm", "pnpm", "yarn", "bun"):
             return self.package_runner(prog, args, cwd, depth, timed)
         if prog in JS_RUNTIMES or re.fullmatch(r"python[0-9.]*|pypy3?", prog):
             return self.interpreter(prog, args, cwd)
@@ -201,6 +200,8 @@ class Checker:
                 pkg_dir = self.path(args[i + 1], cwd)
                 i += 2
                 continue
+            if prog == "bun" and not rest and a in ("-", "-e", "--eval", "-p", "--print", "-r", "--require", "--import", "--loader"):
+                return self.interpreter(prog, args[i:], pkg_dir)
             m = re.match(r"--(?:prefix|dir|cwd)=(.+)", a)
             if m:
                 pkg_dir = self.path(m.group(1), cwd)

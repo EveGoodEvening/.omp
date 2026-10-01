@@ -35,6 +35,7 @@ class LaunchPolicyTest(unittest.TestCase):
             '''node -e 'require("playwright").chromium.launch()' ''',
             'python3 -c "from playwright.sync_api import sync_playwright"',
             "python3 - <<'PY'\nfrom playwright.sync_api import sync_playwright\nPY",
+            "bun - <<'JS'\nrequire('puppeteer').launch();\nJS",
         ]
         for command in commands:
             with self.subTest(command=command):
@@ -64,6 +65,53 @@ class LaunchPolicyTest(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertTrue(self.check(command, cwd=root)['block'])
             self.assertFalse(self.check('npm run lint', cwd=root)['block'])
+
+    def test_bun_cwd_selects_target_package_scripts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / 'project'
+            project.mkdir()
+            (root / 'package.json').write_text(json.dumps({'scripts': {'smoke': 'printf ordinary'}}))
+            (project / 'package.json').write_text(json.dumps({'scripts': {
+                'smoke': 'node browser.mjs', 'lint': 'printf clean',
+            }}))
+            (project / 'browser.mjs').write_text('import puppeteer from "puppeteer";')
+            for command in (
+                'bun --cwd project run smoke',
+                'bun --cwd=project run smoke',
+                'bun --smol --cwd project run smoke',
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self.check(command, cwd=root)['block'])
+            self.assertFalse(self.check('bun run smoke', cwd=root)['block'])
+            self.assertFalse(self.check('bun --cwd project run lint', cwd=root)['block'])
+            gated = self.check(f'{GATE} -- bun --cwd project run smoke', cwd=root)
+            self.assertFalse(gated['block'])
+            self.assertTrue(gated['gated'])
+
+    def test_bun_leading_options_preserve_inline_and_stdin_checks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for command in (
+                '''bun --smol -e 'require("puppeteer").launch()' ''',
+                '''bun --cwd . -e 'require("puppeteer").launch()' ''',
+                '''bun --cwd=. --print 'require("puppeteer").launch()' ''',
+                "bun --cwd . - <<'JS'\nrequire('puppeteer').launch();\nJS",
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self.check(command, cwd=tmp)['block'])
+            self.assertFalse(self.check('bun --smol --cwd . -e "console.log(42)"', cwd=tmp)['block'])
+            self.assertFalse(self.check("bun --cwd . - <<'JS'\nconsole.log(42);\nJS", cwd=tmp)['block'])
+
+    def test_bun_preloads_are_resolved_after_cwd_options(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / 'project'
+            project.mkdir()
+            (root / 'preload.cjs').write_text('console.log("ordinary");')
+            (project / 'preload.cjs').write_text('require("puppeteer").launch();')
+            (project / 'main.cjs').write_text('console.log("ordinary");')
+            self.assertTrue(self.check('bun --cwd project --require ./preload.cjs main.cjs', cwd=root)['block'])
+            self.assertFalse(self.check('bun --cwd project main.cjs', cwd=root)['block'])
 
     def test_nonlaunching_cli_operations_remain_usable(self):
         for command in ('npx playwright --version', 'npx playwright install', 'npx playwright test --list', 'chrome --version'):
