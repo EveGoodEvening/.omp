@@ -12,7 +12,7 @@ import shlex
 import sys
 
 GATE = "~/.omp/bin/heavy-gate"
-GATES = {os.path.realpath(os.path.expanduser(p)) for p in (GATE, "~/.claude/bin/heavy-gate")}
+GATES = {os.path.realpath(os.path.expanduser(p)) for p in (GATE, "~/.claude/bin/heavy-gate", "~/.codex/bin/heavy-gate")}
 INDICATOR = re.compile(
     r"""['\"](?:playwright|playwright-core|playwright-chromium|@playwright/test|puppeteer|puppeteer-core)['\"]"""
     r"|\b(?:chromium|firefox|webkit|puppeteer)\.(?:launch|launchPersistentContext|launch_persistent_context|launchServer)\b"
