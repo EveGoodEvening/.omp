@@ -34,6 +34,7 @@ natives/
 !bin/heavy-gate
 !bin/heavy-gate-hook
 !tests/heavy_gate_test.py
+!tests/heavy_gate_runtime_test.py
 
 !agent/*.md
 !agent/agents/**
